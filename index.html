@@ -19,6 +19,7 @@
             </div>
         </div>
         <nav class="main-nav">
+            <a href="#acceso">Acceso</a>
             <a href="#roles">Roles</a>
             <a href="#departamentos">Departamentos</a>
             <a href="#vision">Visión General</a>
@@ -53,6 +54,40 @@
                     <h3>Empleado</h3>
                     <p>Operativa final: tareas, agenda diaria y estado de instalaciones.</p>
                 </div>
+            </div>
+        </section>
+
+        <section id="acceso" class="content-section acceso" aria-labelledby="acceso-titulo">
+            <div class="section-header">
+                <h2 id="acceso-titulo">Acceso a la plataforma</h2>
+                <p>Inicia sesión con tu rol para acceder al panel correspondiente dentro de la intranet.</p>
+            </div>
+
+            <div class="login-grid">
+                <form id="login-form" class="login-card" aria-describedby="login-feedback">
+                    <h3>Ingresa tus credenciales</h3>
+                    <label class="form-field">
+                        <span>Usuario</span>
+                        <input id="username" name="username" type="text" autocomplete="username" required>
+                    </label>
+                    <label class="form-field">
+                        <span>Contraseña</span>
+                        <input id="password" name="password" type="password" autocomplete="current-password" required>
+                    </label>
+                    <button type="submit" class="primary full-width">Entrar</button>
+                    <p class="helper-text">Modo Dios, Delegado y Empleado ya están preconfigurados.</p>
+                </form>
+
+                <aside class="login-result" aria-live="polite">
+                    <div id="login-feedback" class="feedback" role="status">
+                        Introduce tus credenciales para ver tu panel asignado.
+                    </div>
+                    <div id="role-access" class="role-access" hidden>
+                        <h3 id="role-access-title"></h3>
+                        <p id="role-access-description"></p>
+                        <ul id="role-access-actions"></ul>
+                    </div>
+                </aside>
             </div>
         </section>
 
