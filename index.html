@@ -3,264 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fíbaro | Plataforma de Gestión</title>
+    <title>Fíbaro | Acceso a la plataforma</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header class="site-header">
-        <div class="branding">
-            <div class="logo-circle">F</div>
-            <div>
-                <p class="brand-name">FÍBARO</p>
-                <p class="brand-tagline">Soluciones de fibra óptica residencial</p>
-            </div>
-        </div>
-        <nav class="main-nav">
-            <a href="#acceso">Acceso</a>
-            <a href="#roles">Roles</a>
-            <a href="#departamentos">Departamentos</a>
-            <a href="#vision">Visión General</a>
-        </nav>
-        <a class="cta-button" href="#contacto">Solicitar Acceso</a>
-    </header>
-
-    <main>
-        <section class="hero">
-            <div class="hero-copy">
-                <h1>Gestiona Fíbaro con precisión y control</h1>
-                <p>
-                    Consolida la operativa de instalación de fibra óptica en una sola plataforma.
-                    Define permisos por rol, asigna responsabilidades por departamento y ofrece a cada
-                    empleado la información que necesita para entregar el mejor servicio residencial.
-                </p>
-                <div class="hero-actions">
-                    <a class="primary" href="#vision">Ver la plataforma</a>
-                    <a class="secondary" href="#roles">Configurar roles</a>
-                </div>
-            </div>
-            <div class="hero-illustration" aria-hidden="true">
-                <div class="panel panel-dios">
-                    <h3>Modo Dios</h3>
-                    <p>Control total, dashboards globales y configuración de permisos.</p>
-                </div>
-                <div class="panel panel-delegado">
-                    <h3>Delegado</h3>
-                    <p>Visión enfocada por departamento con herramientas configurables.</p>
-                </div>
-                <div class="panel panel-empleado">
-                    <h3>Empleado</h3>
-                    <p>Operativa final: tareas, agenda diaria y estado de instalaciones.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="acceso" class="content-section acceso" aria-labelledby="acceso-titulo">
-            <div class="section-header">
-                <h2 id="acceso-titulo">Acceso a la plataforma</h2>
-                <p>Inicia sesión con tu rol para acceder al panel correspondiente dentro de la intranet.</p>
-            </div>
-
-            <div class="login-grid">
-                <form id="login-form" class="login-card" aria-describedby="login-feedback">
-                    <h3>Ingresa tus credenciales</h3>
-                    <label class="form-field">
-                        <span>Usuario</span>
-                        <input id="username" name="username" type="text" autocomplete="username" required>
-                    </label>
-                    <label class="form-field">
-                        <span>Contraseña</span>
-                        <input id="password" name="password" type="password" autocomplete="current-password" required>
-                    </label>
-                    <button type="submit" class="primary full-width">Entrar</button>
-                    <p class="helper-text">Modo Dios, Delegado y Empleado ya están preconfigurados.</p>
-                </form>
-
-                <aside class="login-result" aria-live="polite">
-                    <div id="login-feedback" class="feedback" role="status">
-                        Introduce tus credenciales para ver tu panel asignado.
-                    </div>
-                    <div id="role-access" class="role-access" hidden>
-                        <h3 id="role-access-title"></h3>
-                        <p id="role-access-description"></p>
-                        <ul id="role-access-actions"></ul>
-                    </div>
-                </aside>
-            </div>
-        </section>
-
-        <section id="roles" class="content-section roles">
-            <div class="section-header">
-                <h2>Roles jerárquicos para asegurar el control</h2>
-                <p>La plataforma diferencia las responsabilidades y accesos en tres niveles progresivos.</p>
-            </div>
-
-            <div class="role-selector" role="tablist" aria-label="Roles en la plataforma">
-                <button class="role-pill active" role="tab" aria-selected="true" aria-controls="rol-dios" data-role="dios">Modo Dios</button>
-                <button class="role-pill" role="tab" aria-selected="false" aria-controls="rol-delegado" data-role="delegado">Delegado</button>
-                <button class="role-pill" role="tab" aria-selected="false" aria-controls="rol-empleado" data-role="empleado">Empleado</button>
-            </div>
-
-            <div class="role-panels">
-                <article id="rol-dios" class="role-panel active" role="tabpanel">
-                    <h3>Modo Dios</h3>
-                    <ul>
-                        <li>Visión total del negocio y de todos los departamentos.</li>
-                        <li>Configura permisos específicos para delegados y empleados.</li>
-                        <li>Define workflows, catálogos, inventario y reglas de operación.</li>
-                        <li>Aprueba cambios críticos y gestiona reportes estratégicos.</li>
-                    </ul>
-                </article>
-
-                <article id="rol-delegado" class="role-panel" role="tabpanel" hidden>
-                    <h3>Delegado</h3>
-                    <ul>
-                        <li>Recibe acceso granular definido por el modo dios.</li>
-                        <li>Gestiona equipos y tareas dentro de uno o varios departamentos.</li>
-                        <li>Monitorea KPIs operativos en tiempo real.</li>
-                        <li>Escala incidencias y solicita recursos adicionales.</li>
-                    </ul>
-                </article>
-
-                <article id="rol-empleado" class="role-panel" role="tabpanel" hidden>
-                    <h3>Empleado</h3>
-                    <ul>
-                        <li>Visualiza únicamente la operativa asignada por su departamento.</li>
-                        <li>Confirma instalaciones, controla checklists y adjunta evidencias.</li>
-                        <li>Actualiza el estado de las órdenes y comunica incidencias.</li>
-                        <li>Consulta su agenda y recibe notificaciones de nuevas tareas.</li>
-                    </ul>
-                </article>
-            </div>
-        </section>
-
-        <section id="departamentos" class="content-section departamentos">
-            <div class="section-header">
-                <h2>Departamentos iniciales</h2>
-                <p>La plataforma arranca con cuatro áreas clave y se adapta fácilmente a nuevas necesidades.</p>
-            </div>
-            <div class="department-grid">
-                <article class="department-card">
-                    <h3>Almacén</h3>
-                    <p>Control de stock, herramientas y materiales para cada instalación.</p>
-                    <ul>
-                        <li>Inventario en tiempo real.</li>
-                        <li>Reservas por proyecto.</li>
-                        <li>Alertas de reposición.</li>
-                    </ul>
-                </article>
-                <article class="department-card">
-                    <h3>Gestión</h3>
-                    <p>Coordinación de agendas, clientes y órdenes de instalación.</p>
-                    <ul>
-                        <li>Planificación de cuadrillas.</li>
-                        <li>Seguimiento de SLA residenciales.</li>
-                        <li>Tableros de estado.</li>
-                    </ul>
-                </article>
-                <article class="department-card">
-                    <h3>Flota</h3>
-                    <p>Supervisión del parque vehicular y rutas de despliegue.</p>
-                    <ul>
-                        <li>Localización GPS.</li>
-                        <li>Mantenimiento preventivo.</li>
-                        <li>Optimización de rutas.</li>
-                    </ul>
-                </article>
-                <article class="department-card">
-                    <h3>Contabilidad</h3>
-                    <p>Facturación, control de gastos y reportes financieros.</p>
-                    <ul>
-                        <li>Integración bancaria.</li>
-                        <li>Conciliaciones automáticas.</li>
-                        <li>Reportes personalizables.</li>
-                    </ul>
-                </article>
-            </div>
-        </section>
-
-        <section id="vision" class="content-section vision">
-            <div class="vision-grid">
+    <main class="auth-layout">
+        <section id="login-card" class="card login-card" aria-labelledby="login-title">
+            <div class="brand">
+                <div class="logo" aria-hidden="true">F</div>
                 <div>
-                    <h2>Una visión centralizada y escalable</h2>
-                    <p>
-                        Fíbaro Gestión nace para ofrecer una capa digital que acompañe la expansión de la
-                        instalación de fibra óptica residencial. Conecta personas, procesos y datos en un
-                        entorno seguro que respeta la jerarquía organizacional.
-                    </p>
-                    <ul class="vision-list">
-                        <li>Dashboard ejecutivo con indicadores clave de cada departamento.</li>
-                        <li>Motor de permisos flexible para añadir nuevos roles y reglas.</li>
-                        <li>Base tecnológica preparada para crecer con nuevas funcionalidades.</li>
-                    </ul>
-                </div>
-                <div class="vision-card">
-                    <h3>Panel consolidado</h3>
-                    <p>
-                        Visualiza órdenes abiertas, estado de materiales, disponibilidad de vehículos
-                        y salud financiera sin perder detalle operativo.
-                    </p>
-                    <div class="vision-preview">
-                        <div class="preview-header">
-                            <span class="status-dot"></span>
-                            <p>Panel Maestro</p>
-                        </div>
-                        <div class="preview-body">
-                            <div>
-                                <p class="preview-label">Órdenes activas</p>
-                                <p class="preview-value">128</p>
-                            </div>
-                            <div>
-                                <p class="preview-label">Vehículos disponibles</p>
-                                <p class="preview-value">18</p>
-                            </div>
-                            <div>
-                                <p class="preview-label">Satisfacción cliente</p>
-                                <p class="preview-value">92%</p>
-                            </div>
-                        </div>
-                    </div>
+                    <p class="brand-name">FÍBARO</p>
+                    <p class="brand-tagline">Plataforma de gestión</p>
                 </div>
             </div>
+            <h1 id="login-title">Accede a tu panel</h1>
+            <p class="intro">Ingresa con tu usuario y contraseña para continuar a tu menú.</p>
+            <form id="login-form" novalidate>
+                <label class="form-field">
+                    <span>Usuario</span>
+                    <input id="username" name="username" type="text" autocomplete="username" required>
+                </label>
+                <label class="form-field">
+                    <span>Contraseña</span>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required>
+                </label>
+                <button type="submit" class="primary-button">Ingresar</button>
+                <p id="login-feedback" class="feedback" role="status" aria-live="polite"></p>
+            </form>
         </section>
 
-        <section id="contacto" class="content-section contacto">
-            <div class="contact-card">
-                <h2>¿Listo para definir tu despliegue?</h2>
-                <p>
-                    Agenda una sesión con nuestro equipo para personalizar la plataforma según la estructura
-                    real de Fíbaro. Empezaremos por importar a tus colaboradores, asignar roles y mapear los
-                    procesos críticos de cada departamento.
-                </p>
-                <form class="contact-form">
-                    <div class="form-row">
-                        <label for="nombre">Nombre completo</label>
-                        <input id="nombre" name="nombre" type="text" placeholder="María González" required>
+        <section id="role-dashboard" class="card role-dashboard" hidden>
+            <header class="dashboard-header">
+                <div class="brand compact">
+                    <div class="logo" aria-hidden="true">F</div>
+                    <div>
+                        <p class="brand-name">FÍBARO</p>
+                        <p class="brand-tagline">Panel interno</p>
                     </div>
-                    <div class="form-row">
-                        <label for="email">Correo electrónico</label>
-                        <input id="email" name="email" type="email" placeholder="maria@fibaro.com" required>
-                    </div>
-                    <div class="form-row">
-                        <label for="mensaje">Mensaje</label>
-                        <textarea id="mensaje" name="mensaje" rows="4" placeholder="Cuéntanos qué necesitas..." required></textarea>
-                    </div>
-                    <button type="submit">Solicitar demo</button>
-                </form>
-            </div>
+                </div>
+                <div class="user-meta">
+                    <p id="role-title" class="role-title"></p>
+                    <button id="logout-button" type="button" class="secondary-button">Cerrar sesión</button>
+                </div>
+            </header>
+            <p id="role-description" class="role-description"></p>
+            <nav aria-label="Menú principal">
+                <ul id="role-menu" class="role-menu"></ul>
+            </nav>
         </section>
     </main>
-
-    <footer class="site-footer">
-        <p>© <span id="year"></span> Fíbaro Soluciones RGB. Instalación de fibra óptica residencial.</p>
-        <div class="footer-links">
-            <a href="#roles">Roles</a>
-            <a href="#departamentos">Departamentos</a>
-            <a href="#vision">Visión</a>
-        </div>
-    </footer>
 
     <script src="script.js"></script>
 </body>
