@@ -1,5 +1,4 @@
 const loginForm = document.getElementById('login-form');
-const loginCard = document.getElementById('login-card');
 const loginFeedback = document.getElementById('login-feedback');
 const roleDashboard = document.getElementById('role-dashboard');
 const authLayout = document.querySelector('.auth-layout');
@@ -14,6 +13,10 @@ const departmentTabs = document.getElementById('department-tabs');
 const departmentPanel = document.getElementById('department-panel');
 const profileButton = document.getElementById('profile-button');
 const profilePanel = document.getElementById('profile-panel');
+const profileRole = document.getElementById('profile-role');
+const profileName = document.getElementById('profile-name');
+const profileEmail = document.getElementById('profile-email');
+const profileLastLogin = document.getElementById('profile-last-login');
 
 const rolesContent = {
     dios: {
@@ -102,9 +105,24 @@ const departmentContent = {
 };
 
 const credentials = {
-    admin: { password: 'admin', role: 'dios' },
-    delegado: { password: 'delegado', role: 'delegado' },
-    empleado: { password: 'empleado', role: 'empleado' }
+    admin: {
+        password: 'admin',
+        role: 'dios',
+        name: 'Alexandra Rivera',
+        email: 'alexandra.rivera@fibaro.com'
+    },
+    delegado: {
+        password: 'delegado',
+        role: 'delegado',
+        name: 'Marcos Pérez',
+        email: 'marcos.perez@fibaro.com'
+    },
+    empleado: {
+        password: 'empleado',
+        role: 'empleado',
+        name: 'Lucía Gómez',
+        email: 'lucia.gomez@fibaro.com'
+    }
 };
 
 const renderDepartment = (departmentKey) => {
@@ -185,44 +203,108 @@ const renderRoleDashboard = (roleKey) => {
     } else {
         godDashboard?.setAttribute('hidden', 'hidden');
         standardDashboard?.removeAttribute('hidden');
-        roleTitle.textContent = roleInfo.title;
-        roleDescription.textContent = roleInfo.description;
-        roleMenu.innerHTML = roleInfo.menu.map((item) => `<li>${item}</li>`).join('');
+        if (roleTitle) roleTitle.textContent = roleInfo.title;
+        if (roleDescription) roleDescription.textContent = roleInfo.description;
+        if (roleMenu) roleMenu.innerHTML = roleInfo.menu.map((item) => `<li>${item}</li>`).join('');
         profilePanel?.setAttribute('hidden', 'hidden');
     }
 
-    loginCard.setAttribute('hidden', 'hidden');
-    roleDashboard.removeAttribute('hidden');
+    roleDashboard?.removeAttribute('hidden');
     authLayout?.classList.add('dashboard-active');
     pageBody?.classList.add('dashboard-mode');
-
-    if (logoutButton) {
-        logoutButton.focus();
-    }
 };
 
-const resetToLogin = () => {
-    if (!loginForm) {
+const populateProfile = (userData) => {
+    if (!userData) {
         return;
     }
 
-    loginForm.reset();
-    loginFeedback.textContent = '';
-    loginFeedback.classList.remove('error');
-    roleTitle.textContent = '';
-    roleDescription.textContent = '';
-    roleMenu.innerHTML = '';
-    roleDashboard.setAttribute('hidden', 'hidden');
-    loginCard.removeAttribute('hidden');
-    loginForm.username.focus();
-    godDashboard?.setAttribute('hidden', 'hidden');
-    standardDashboard?.setAttribute('hidden', 'hidden');
-    profilePanel?.setAttribute('hidden', 'hidden');
-    authLayout?.classList.remove('dashboard-active');
-    pageBody?.classList.remove('dashboard-mode');
+    if (profileRole) {
+        profileRole.textContent = rolesContent[userData.role]?.title ?? '';
+    }
+
+    if (profileName) {
+        profileName.textContent = userData.name;
+    }
+
+    if (profileEmail) {
+        profileEmail.textContent = userData.email;
+    }
+
+    if (profileLastLogin) {
+        const formatted = userData.lastLogin
+            ? new Date(userData.lastLogin).toLocaleString('es-ES', {
+                  dateStyle: 'short',
+                  timeStyle: 'short'
+              })
+            : '';
+        profileLastLogin.textContent = formatted;
+    }
+};
+
+const initializeDashboard = () => {
+    const storedUser = sessionStorage.getItem('fibaroUser');
+
+    if (!storedUser) {
+        window.location.replace('index.html');
+        return;
+    }
+
+    let userData;
+
+    try {
+        userData = JSON.parse(storedUser);
+    } catch (error) {
+        sessionStorage.removeItem('fibaroUser');
+        window.location.replace('index.html');
+        return;
+    }
+
+    renderRoleDashboard(userData.role);
+    populateProfile(userData);
+
+    if (logoutButton) {
+        logoutButton.addEventListener('click', () => {
+            sessionStorage.removeItem('fibaroUser');
+            window.location.replace('index.html');
+        });
+    }
+
+    if (profileButton) {
+        profileButton.addEventListener('click', () => {
+            if (!profilePanel) {
+                return;
+            }
+
+            const isHidden = profilePanel.hasAttribute('hidden');
+            if (isHidden) {
+                profilePanel.removeAttribute('hidden');
+                profilePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                profilePanel.setAttribute('hidden', 'hidden');
+            }
+        });
+    }
+
+    if (departmentTabs) {
+        departmentTabs.addEventListener('click', handleDepartmentClick);
+    }
 };
 
 if (loginForm) {
+    const existingSession = sessionStorage.getItem('fibaroUser');
+
+    if (existingSession) {
+        try {
+            const parsedSession = JSON.parse(existingSession);
+            if (parsedSession?.role) {
+                window.location.replace('dashboard.html');
+            }
+        } catch (error) {
+            sessionStorage.removeItem('fibaroUser');
+        }
+    }
+
     loginForm.addEventListener('submit', (event) => {
         event.preventDefault();
 
@@ -230,48 +312,39 @@ if (loginForm) {
         const password = loginForm.password.value.trim();
         const user = credentials[username];
 
-        loginFeedback.classList.remove('error');
+        loginFeedback?.classList.remove('error');
 
         if (!user || user.password !== password) {
-            loginFeedback.textContent = 'Credenciales incorrectas. Inténtalo nuevamente.';
-            loginFeedback.classList.add('error');
+            if (loginFeedback) {
+                loginFeedback.textContent = 'Credenciales incorrectas. Inténtalo nuevamente.';
+                loginFeedback.classList.add('error');
+            }
             loginForm.password.focus();
             return;
         }
 
-        loginFeedback.textContent = '';
-        renderRoleDashboard(user.role);
-    });
-}
+        const loginData = {
+            username,
+            role: user.role,
+            name: user.name,
+            email: user.email,
+            lastLogin: new Date().toISOString()
+        };
 
-if (logoutButton) {
-    logoutButton.addEventListener('click', () => {
-        resetToLogin();
-    });
-}
+        sessionStorage.setItem('fibaroUser', JSON.stringify(loginData));
 
-if (departmentTabs) {
-    departmentTabs.addEventListener('click', handleDepartmentClick);
-}
-
-if (profileButton) {
-    profileButton.addEventListener('click', () => {
-        if (!profilePanel) {
-            return;
+        if (loginFeedback) {
+            loginFeedback.textContent = '';
         }
 
-        const isHidden = profilePanel.hasAttribute('hidden');
-        if (isHidden) {
-            profilePanel.removeAttribute('hidden');
-            profilePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-            profilePanel.setAttribute('hidden', 'hidden');
-        }
+        window.location.href = 'dashboard.html';
     });
-}
 
-window.addEventListener('DOMContentLoaded', () => {
-    if (loginForm) {
+    window.addEventListener('DOMContentLoaded', () => {
         loginForm.username.focus();
-    }
-});
+    });
+}
+
+if (roleDashboard) {
+    initializeDashboard();
+}
