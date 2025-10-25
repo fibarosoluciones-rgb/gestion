@@ -12,9 +12,9 @@
 <body>
     <main class="auth-layout">
         <section id="login-card" class="card login-card" aria-labelledby="login-title">
-            <div class="brand">
-                <div class="logo" aria-hidden="true">F</div>
-                <div>
+            <div class="login-brand" aria-hidden="true">
+                <div class="logo">F</div>
+                <div class="login-brand-text">
                     <p class="brand-name">FÍBARO</p>
                     <p class="brand-tagline">Plataforma de gestión</p>
                 </div>
@@ -44,15 +44,58 @@
                         <p class="brand-tagline">Panel interno</p>
                     </div>
                 </div>
-                <div class="user-meta">
-                    <p id="role-title" class="role-title"></p>
+                <div class="dashboard-actions">
+                    <button id="profile-button" type="button" class="profile-button" aria-haspopup="dialog">
+                        <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80" alt="Ver perfil" loading="lazy">
+                    </button>
                     <button id="logout-button" type="button" class="secondary-button">Cerrar sesión</button>
                 </div>
             </header>
-            <p id="role-description" class="role-description"></p>
-            <nav aria-label="Menú principal">
-                <ul id="role-menu" class="role-menu"></ul>
-            </nav>
+
+            <section id="profile-panel" class="profile-panel" hidden aria-labelledby="profile-panel-title">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80" alt="Foto de perfil" loading="lazy">
+                    </div>
+                    <div>
+                        <h2 id="profile-panel-title">Mis datos personales</h2>
+                        <p class="profile-role">Administrador general</p>
+                    </div>
+                </div>
+                <dl class="profile-details">
+                    <div>
+                        <dt>Nombre</dt>
+                        <dd>Alexandra Rivera</dd>
+                    </div>
+                    <div>
+                        <dt>Correo</dt>
+                        <dd>alexandra.rivera@fibaro.com</dd>
+                    </div>
+                    <div>
+                        <dt>Teléfono</dt>
+                        <dd>+34 600 123 456</dd>
+                    </div>
+                    <div>
+                        <dt>Último acceso</dt>
+                        <dd>12/09/2023 - 09:24</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section id="god-dashboard" class="god-dashboard" hidden>
+                <h1 class="role-title">Modo Dios</h1>
+                <p class="role-description">Supervisa todos los departamentos y visualiza sus indicadores clave en un solo lugar.</p>
+                <nav id="department-tabs" class="department-tabs" aria-label="Departamentos"></nav>
+                <section id="department-panel" class="department-panel" aria-live="polite"></section>
+            </section>
+
+            <section id="standard-dashboard" class="standard-dashboard" hidden>
+                <h1 id="role-title" class="role-title"></h1>
+                <p id="role-description" class="role-description"></p>
+                <nav aria-label="Menú principal">
+                    <ul id="role-menu" class="role-menu"></ul>
+                </nav>
+            </section>
         </section>
     </main>
 
