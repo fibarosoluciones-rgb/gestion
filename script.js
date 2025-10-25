@@ -1,39 +1,41 @@
-const rolePills = document.querySelectorAll('.role-pill');
-const rolePanels = document.querySelectorAll('.role-panel');
-const yearLabel = document.getElementById('year');
 const loginForm = document.getElementById('login-form');
+const loginCard = document.getElementById('login-card');
 const loginFeedback = document.getElementById('login-feedback');
-const roleAccess = document.getElementById('role-access');
-const roleAccessTitle = document.getElementById('role-access-title');
-const roleAccessDescription = document.getElementById('role-access-description');
-const roleAccessActions = document.getElementById('role-access-actions');
+const roleDashboard = document.getElementById('role-dashboard');
+const roleTitle = document.getElementById('role-title');
+const roleDescription = document.getElementById('role-description');
+const roleMenu = document.getElementById('role-menu');
+const logoutButton = document.getElementById('logout-button');
 
 const rolesContent = {
     dios: {
-        title: 'Panel Modo Dios',
-        description: 'Control total sobre la operación, configuración de permisos y reportes estratégicos.',
-        actions: [
-            'Gestiona catálogos, inventarios y reglas globales.',
-            'Define permisos por departamento y asigna delegados.',
-            'Aprueba cambios críticos y audita reportes ejecutivos.'
+        title: 'Modo Dios',
+        description: 'Accede a la configuración completa de la plataforma y supervisa todos los departamentos.',
+        menu: [
+            'Dashboard general',
+            'Gestión de roles y permisos',
+            'Reportes estratégicos',
+            'Configuración de procesos'
         ]
     },
     delegado: {
-        title: 'Panel Delegado',
-        description: 'Gestión táctica de equipos con KPIs y seguimiento detallado por departamento.',
-        actions: [
-            'Asigna tareas a empleados y controla el avance diario.',
-            'Monitorea indicadores operativos y solicita recursos.',
-            'Escala incidencias directamente al modo dios.'
+        title: 'Delegado',
+        description: 'Gestiona tu departamento, asigna tareas y da seguimiento a la operación diaria.',
+        menu: [
+            'Panel del departamento',
+            'Agenda del equipo',
+            'Solicitudes de recursos',
+            'Indicadores operativos'
         ]
     },
     empleado: {
-        title: 'Panel Empleado',
-        description: 'Herramientas de campo para ejecutar tareas y reportar resultados en tiempo real.',
-        actions: [
-            'Consulta la agenda diaria y confirma instalaciones completadas.',
-            'Adjunta evidencias y checklists de cada servicio.',
-            'Reporta incidencias al delegado con un clic.'
+        title: 'Empleado',
+        description: 'Consulta tus pendientes del día, reporta avances y mantén informado a tu delegado.',
+        menu: [
+            'Mis tareas',
+            'Registro de instalaciones',
+            'Reportar incidencias',
+            'Materiales asignados'
         ]
     }
 };
@@ -44,69 +46,71 @@ const credentials = {
     empleado: { password: 'empleado', role: 'empleado' }
 };
 
-const setActiveRole = (selectedRole) => {
-    rolePills.forEach((btn) => {
-        const isActive = btn.dataset.role === selectedRole;
-        btn.classList.toggle('active', isActive);
-        btn.setAttribute('aria-selected', String(isActive));
-    });
+const renderRoleDashboard = (roleKey) => {
+    const roleInfo = rolesContent[roleKey];
 
-    rolePanels.forEach((panel) => {
-        const shouldShow = panel.id === `rol-${selectedRole}`;
-        panel.classList.toggle('active', shouldShow);
-        if (shouldShow) {
-            panel.removeAttribute('hidden');
-        } else {
-            panel.setAttribute('hidden', 'hidden');
-        }
-    });
+    if (!roleInfo) {
+        return;
+    }
+
+    roleTitle.textContent = roleInfo.title;
+    roleDescription.textContent = roleInfo.description;
+    roleMenu.innerHTML = roleInfo.menu.map((item) => `<li>${item}</li>`).join('');
+
+    loginCard.setAttribute('hidden', 'hidden');
+    roleDashboard.removeAttribute('hidden');
+
+    if (logoutButton) {
+        logoutButton.focus();
+    }
 };
 
-rolePills.forEach((pill) => {
-    pill.addEventListener('click', () => {
-        setActiveRole(pill.dataset.role);
-    });
-});
+const resetToLogin = () => {
+    if (!loginForm) {
+        return;
+    }
+
+    loginForm.reset();
+    loginFeedback.textContent = '';
+    loginFeedback.classList.remove('error');
+    roleTitle.textContent = '';
+    roleDescription.textContent = '';
+    roleMenu.innerHTML = '';
+    roleDashboard.setAttribute('hidden', 'hidden');
+    loginCard.removeAttribute('hidden');
+    loginForm.username.focus();
+};
 
 if (loginForm) {
     loginForm.addEventListener('submit', (event) => {
         event.preventDefault();
 
-        const usernameInput = loginForm.username.value.trim().toLowerCase();
-        const passwordInput = loginForm.password.value.trim();
-        const user = credentials[usernameInput];
+        const username = loginForm.username.value.trim().toLowerCase();
+        const password = loginForm.password.value.trim();
+        const user = credentials[username];
 
-        loginFeedback.classList.remove('error', 'success');
+        loginFeedback.classList.remove('error');
 
-        if (!user || user.password !== passwordInput) {
-            loginFeedback.textContent = 'Credenciales incorrectas. Verifica usuario y contraseña.';
+        if (!user || user.password !== password) {
+            loginFeedback.textContent = 'Credenciales incorrectas. Inténtalo nuevamente.';
             loginFeedback.classList.add('error');
-            roleAccess.setAttribute('hidden', 'hidden');
-            roleAccessActions.innerHTML = '';
-            roleAccessTitle.textContent = '';
-            roleAccessDescription.textContent = '';
+            loginForm.password.focus();
             return;
         }
 
-        const { role } = user;
-        const roleInfo = rolesContent[role];
-
-        loginFeedback.textContent = 'Acceso concedido. Redirigiendo a tu panel asignado.';
-        loginFeedback.classList.add('success');
-
-        if (roleInfo) {
-            roleAccessTitle.textContent = roleInfo.title;
-            roleAccessDescription.textContent = roleInfo.description;
-            roleAccessActions.innerHTML = roleInfo.actions
-                .map((action) => `<li>${action}</li>`)
-                .join('');
-            roleAccess.removeAttribute('hidden');
-        }
-
-        setActiveRole(role);
+        loginFeedback.textContent = '';
+        renderRoleDashboard(user.role);
     });
 }
 
-if (yearLabel) {
-    yearLabel.textContent = new Date().getFullYear();
+if (logoutButton) {
+    logoutButton.addEventListener('click', () => {
+        resetToLogin();
+    });
 }
+
+window.addEventListener('DOMContentLoaded', () => {
+    if (loginForm) {
+        loginForm.username.focus();
+    }
+});
