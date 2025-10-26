@@ -21,42 +21,50 @@
                     </div>
                 </div>
                 <div class="dashboard-actions">
-                    <button id="profile-button" type="button" class="profile-button" aria-haspopup="dialog">
-                        <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80" alt="Ver perfil" loading="lazy">
-                    </button>
+                    <div class="profile-menu">
+                        <button id="profile-button" type="button" class="profile-button" aria-haspopup="dialog" aria-expanded="false">
+                            <img id="profile-thumbnail" src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80" alt="Abrir menú de perfil" loading="lazy">
+                        </button>
+                        <section id="profile-panel" class="profile-panel" hidden aria-labelledby="profile-panel-title">
+                            <div class="profile-header">
+                                <div class="profile-avatar">
+                                    <img id="profile-avatar" src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80" alt="Foto de perfil" loading="lazy">
+                                </div>
+                                <div>
+                                    <h2 id="profile-panel-title">Mis datos personales</h2>
+                                    <p id="profile-role" class="profile-role"></p>
+                                </div>
+                            </div>
+                            <form id="profile-form" class="profile-form" novalidate>
+                                <div class="profile-form-grid">
+                                    <label class="form-field" for="profile-name-input">
+                                        <span>Nombre</span>
+                                        <input id="profile-name-input" name="profile-name" type="text" autocomplete="name" required>
+                                    </label>
+                                    <label class="form-field" for="profile-email-input">
+                                        <span>Correo</span>
+                                        <input id="profile-email-input" name="profile-email" type="email" autocomplete="email" required>
+                                    </label>
+                                    <label class="form-field" for="profile-phone-input">
+                                        <span>Teléfono</span>
+                                        <input id="profile-phone-input" name="profile-phone" type="tel" autocomplete="tel" required>
+                                    </label>
+                                    <label class="form-field profile-photo-field" for="profile-photo-input">
+                                        <span>Foto de perfil</span>
+                                        <input id="profile-photo-input" name="profile-photo" type="file" accept="image/*">
+                                    </label>
+                                </div>
+                                <p class="profile-last-login">Último acceso: <span id="profile-last-login"></span></p>
+                                <div class="profile-form-actions">
+                                    <button id="profile-cancel-button" type="button" class="secondary-button">Cancelar</button>
+                                    <button type="submit" class="primary-button">Guardar cambios</button>
+                                </div>
+                            </form>
+                        </section>
+                    </div>
                     <button id="logout-button" type="button" class="secondary-button">Cerrar sesión</button>
                 </div>
             </header>
-
-            <section id="profile-panel" class="profile-panel" hidden aria-labelledby="profile-panel-title">
-                <div class="profile-header">
-                    <div class="profile-avatar">
-                        <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80" alt="Foto de perfil" loading="lazy">
-                    </div>
-                    <div>
-                        <h2 id="profile-panel-title">Mis datos personales</h2>
-                        <p id="profile-role" class="profile-role"></p>
-                    </div>
-                </div>
-                <dl class="profile-details">
-                    <div>
-                        <dt>Nombre</dt>
-                        <dd id="profile-name">Alexandra Rivera</dd>
-                    </div>
-                    <div>
-                        <dt>Correo</dt>
-                        <dd id="profile-email">alexandra.rivera@fibaro.com</dd>
-                    </div>
-                    <div>
-                        <dt>Teléfono</dt>
-                        <dd>+34 600 123 456</dd>
-                    </div>
-                    <div>
-                        <dt>Último acceso</dt>
-                        <dd id="profile-last-login"></dd>
-                    </div>
-                </dl>
-            </section>
 
             <section id="god-dashboard" class="god-dashboard" hidden>
                 <h1 class="role-title">Modo Dios</h1>
