@@ -22,7 +22,7 @@
                 </div>
                 <div class="dashboard-actions">
                     <button id="profile-button" type="button" class="profile-button" aria-haspopup="dialog">
-                        <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80" alt="Ver perfil" loading="lazy">
+                        <img id="profile-button-image" src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80" alt="Ver perfil" loading="lazy">
                     </button>
                     <button id="logout-button" type="button" class="secondary-button">Cerrar sesión</button>
                 </div>
@@ -31,31 +31,85 @@
             <section id="profile-panel" class="profile-panel" hidden aria-labelledby="profile-panel-title">
                 <div class="profile-header">
                     <div class="profile-avatar">
-                        <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80" alt="Foto de perfil" loading="lazy">
+                        <img id="profile-avatar-image" src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80" alt="Foto de perfil" loading="lazy">
                     </div>
-                    <div>
+                    <div class="profile-summary">
                         <h2 id="profile-panel-title">Mis datos personales</h2>
                         <p id="profile-role" class="profile-role"></p>
+                        <button id="edit-profile-button" type="button" class="secondary-button">Editar perfil</button>
                     </div>
                 </div>
-                <dl class="profile-details">
-                    <div>
-                        <dt>Nombre</dt>
-                        <dd id="profile-name">Alexandra Rivera</dd>
-                    </div>
-                    <div>
-                        <dt>Correo</dt>
-                        <dd id="profile-email">alexandra.rivera@fibaro.com</dd>
-                    </div>
-                    <div>
-                        <dt>Teléfono</dt>
-                        <dd>+34 600 123 456</dd>
-                    </div>
-                    <div>
-                        <dt>Último acceso</dt>
-                        <dd id="profile-last-login"></dd>
-                    </div>
-                </dl>
+
+                <div class="avatar-dropzone" id="avatar-dropzone" tabindex="0" role="button" aria-label="Actualizar foto de perfil">
+                    <input id="avatar-input" type="file" accept="image/*" hidden>
+                    <p class="avatar-dropzone-title">Actualiza tu foto</p>
+                    <p class="avatar-dropzone-hint">Arrastra una imagen aquí o selecciónala desde tu galería.</p>
+                    <button id="avatar-select-button" type="button" class="ghost-button">Elegir desde la galería</button>
+                </div>
+
+                <div class="profile-personal-footer">
+                    <dl id="profile-data-view" class="profile-details">
+                        <div>
+                            <dt>Nombre</dt>
+                            <dd id="profile-name">Alexandra Rivera</dd>
+                        </div>
+                        <div>
+                            <dt>Correo</dt>
+                            <dd id="profile-email">alexandra.rivera@fibaro.com</dd>
+                        </div>
+                        <div>
+                            <dt>Teléfono</dt>
+                            <dd id="profile-phone">+34 600 123 456</dd>
+                        </div>
+                        <div>
+                            <dt>Último acceso</dt>
+                            <dd id="profile-last-login"></dd>
+                        </div>
+                    </dl>
+
+                    <form id="profile-edit-form" class="profile-edit-form" hidden novalidate>
+                        <div class="profile-edit-grid">
+                            <label class="form-field" for="profile-name-input">
+                                <span>Nombre</span>
+                                <input id="profile-name-input" name="name" type="text" autocomplete="name" readonly aria-readonly="true">
+                            </label>
+                            <label class="form-field" for="profile-email-input">
+                                <span>Correo</span>
+                                <input id="profile-email-input" name="email" type="email" autocomplete="email" required>
+                            </label>
+                            <label class="form-field" for="profile-phone-input">
+                                <span>Teléfono</span>
+                                <input id="profile-phone-input" name="phone" type="tel" autocomplete="tel" placeholder="+34 600 123 456">
+                            </label>
+                        </div>
+
+                        <div class="profile-password-section" aria-describedby="profile-password-feedback">
+                            <h3>Seguridad</h3>
+                            <p class="section-hint">Actualiza tu contraseña personal cuando lo necesites.</p>
+                            <div class="profile-password-grid">
+                                <label class="form-field" for="profile-current-password-input">
+                                    <span>Contraseña actual</span>
+                                    <input id="profile-current-password-input" name="current-password" type="password" autocomplete="current-password">
+                                </label>
+                                <label class="form-field" for="profile-new-password-input">
+                                    <span>Nueva contraseña</span>
+                                    <input id="profile-new-password-input" name="new-password" type="password" autocomplete="new-password" minlength="6">
+                                </label>
+                                <label class="form-field" for="profile-confirm-password-input">
+                                    <span>Repite la nueva contraseña</span>
+                                    <input id="profile-confirm-password-input" name="confirm-password" type="password" autocomplete="new-password" minlength="6">
+                                </label>
+                            </div>
+                            <p id="profile-password-feedback" class="feedback" role="status" aria-live="polite"></p>
+                        </div>
+
+                        <p class="profile-last-login-note">Último acceso: <span id="profile-last-login-static"></span></p>
+                        <div class="profile-edit-actions">
+                            <button id="cancel-edit-button" type="button" class="ghost-button">Cancelar</button>
+                            <button id="save-profile-button" type="submit" class="primary-button">Guardar cambios</button>
+                        </div>
+                    </form>
+                </div>
             </section>
 
             <section id="god-dashboard" class="god-dashboard" hidden>

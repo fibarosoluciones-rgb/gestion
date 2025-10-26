@@ -17,6 +17,123 @@ const profileRole = document.getElementById('profile-role');
 const profileName = document.getElementById('profile-name');
 const profileEmail = document.getElementById('profile-email');
 const profileLastLogin = document.getElementById('profile-last-login');
+const profilePhone = document.getElementById('profile-phone');
+const profileAvatarImage = document.getElementById('profile-avatar-image');
+const profileButtonImage = document.getElementById('profile-button-image');
+const profileDataView = document.getElementById('profile-data-view');
+const profileEditForm = document.getElementById('profile-edit-form');
+const profileNameInput = document.getElementById('profile-name-input');
+const profileEmailInput = document.getElementById('profile-email-input');
+const profilePhoneInput = document.getElementById('profile-phone-input');
+const profileLastLoginStatic = document.getElementById('profile-last-login-static');
+const profileCurrentPasswordInput = document.getElementById('profile-current-password-input');
+const profileNewPasswordInput = document.getElementById('profile-new-password-input');
+const profileConfirmPasswordInput = document.getElementById('profile-confirm-password-input');
+const profilePasswordFeedback = document.getElementById('profile-password-feedback');
+const editProfileButton = document.getElementById('edit-profile-button');
+const cancelEditButton = document.getElementById('cancel-edit-button');
+const avatarInput = document.getElementById('avatar-input');
+const avatarDropzone = document.getElementById('avatar-dropzone');
+const avatarSelectButton = document.getElementById('avatar-select-button');
+
+const defaultAvatar =
+    'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=256&q=80';
+
+const CREDENTIAL_OVERRIDES_KEY = 'fibaroCredentialOverrides';
+
+let activeUser = null;
+
+const readCredentialOverrides = () => {
+    if (typeof localStorage === 'undefined') {
+        return {};
+    }
+
+    try {
+        const stored = localStorage.getItem(CREDENTIAL_OVERRIDES_KEY);
+        return stored ? JSON.parse(stored) : {};
+    } catch (error) {
+        return {};
+    }
+};
+
+const writeCredentialOverrides = (overrides) => {
+    if (typeof localStorage === 'undefined') {
+        return;
+    }
+
+    try {
+        localStorage.setItem(CREDENTIAL_OVERRIDES_KEY, JSON.stringify(overrides));
+    } catch (error) {
+        /* ignore write errors */
+    }
+};
+
+const getMergedCredential = (username) => {
+    if (!username) {
+        return undefined;
+    }
+
+    const baseCredential = credentials[username];
+    const overrides = readCredentialOverrides();
+    const overrideData = overrides[username];
+
+    if (!baseCredential) {
+        return overrideData ? { ...overrideData } : undefined;
+    }
+
+    return overrideData ? { ...baseCredential, ...overrideData } : { ...baseCredential };
+};
+
+const persistCredentialOverride = (username, updates) => {
+    if (!username || !updates) {
+        return;
+    }
+
+    const overrides = readCredentialOverrides();
+    overrides[username] = {
+        ...(overrides[username] ?? {}),
+        ...updates
+    };
+    writeCredentialOverrides(overrides);
+};
+
+const persistCurrentUserOverride = (updates) => {
+    if (!activeUser?.username || !updates) {
+        return;
+    }
+
+    persistCredentialOverride(activeUser.username, updates);
+};
+
+const clearProfilePasswordFeedback = () => {
+    if (profilePasswordFeedback) {
+        profilePasswordFeedback.textContent = '';
+        profilePasswordFeedback.classList.remove('error', 'success');
+    }
+};
+
+const showProfilePasswordFeedback = (message, isError = true) => {
+    if (!profilePasswordFeedback) {
+        return;
+    }
+
+    profilePasswordFeedback.textContent = message;
+    profilePasswordFeedback.classList.toggle('error', isError);
+    profilePasswordFeedback.classList.toggle('success', !isError);
+};
+
+const resetProfileSecurityState = () => {
+    if (profileCurrentPasswordInput) {
+        profileCurrentPasswordInput.value = '';
+    }
+    if (profileNewPasswordInput) {
+        profileNewPasswordInput.value = '';
+    }
+    if (profileConfirmPasswordInput) {
+        profileConfirmPasswordInput.value = '';
+    }
+    clearProfilePasswordFeedback();
+};
 
 const rolesContent = {
     dios: {
@@ -109,19 +226,25 @@ const credentials = {
         password: 'admin',
         role: 'dios',
         name: 'Alexandra Rivera',
-        email: 'alexandra.rivera@fibaro.com'
+        email: 'alexandra.rivera@fibaro.com',
+        phone: '+34 600 123 456',
+        avatar: defaultAvatar
     },
     delegado: {
         password: 'delegado',
         role: 'delegado',
         name: 'Marcos Pérez',
-        email: 'marcos.perez@fibaro.com'
+        email: 'marcos.perez@fibaro.com',
+        phone: '+34 600 987 654',
+        avatar: defaultAvatar
     },
     empleado: {
         password: 'empleado',
         role: 'empleado',
         name: 'Lucía Gómez',
-        email: 'lucia.gomez@fibaro.com'
+        email: 'lucia.gomez@fibaro.com',
+        phone: '+34 600 741 258',
+        avatar: defaultAvatar
     }
 };
 
@@ -182,6 +305,7 @@ const handleDepartmentClick = (event) => {
     });
 
     renderDepartment(target.dataset.department);
+    setProfileEditMode(false);
     profilePanel?.setAttribute('hidden', 'hidden');
 };
 
@@ -214,6 +338,21 @@ const renderRoleDashboard = (roleKey) => {
     pageBody?.classList.add('dashboard-mode');
 };
 
+const formatLastLoginDate = (value) => {
+    if (!value) {
+        return '';
+    }
+
+    try {
+        return new Date(value).toLocaleString('es-ES', {
+            dateStyle: 'short',
+            timeStyle: 'short'
+        });
+    } catch (error) {
+        return '';
+    }
+};
+
 const populateProfile = (userData) => {
     if (!userData) {
         return;
@@ -231,15 +370,105 @@ const populateProfile = (userData) => {
         profileEmail.textContent = userData.email;
     }
 
-    if (profileLastLogin) {
-        const formatted = userData.lastLogin
-            ? new Date(userData.lastLogin).toLocaleString('es-ES', {
-                  dateStyle: 'short',
-                  timeStyle: 'short'
-              })
-            : '';
-        profileLastLogin.textContent = formatted;
+    if (profilePhone) {
+        profilePhone.textContent = userData.phone ?? '';
     }
+
+    const formattedLastLogin = formatLastLoginDate(userData.lastLogin);
+
+    if (profileLastLogin) {
+        profileLastLogin.textContent = formattedLastLogin;
+    }
+
+    if (profileLastLoginStatic) {
+        profileLastLoginStatic.textContent = formattedLastLogin || 'Sin registros';
+    }
+
+    const avatarSource = userData.avatar || defaultAvatar;
+
+    if (profileAvatarImage) {
+        profileAvatarImage.src = avatarSource;
+    }
+
+    if (profileButtonImage) {
+        profileButtonImage.src = avatarSource;
+    }
+
+    if (profileNameInput) {
+        profileNameInput.value = userData.name ?? '';
+    }
+
+    if (profileEmailInput) {
+        profileEmailInput.value = userData.email ?? '';
+    }
+
+    if (profilePhoneInput) {
+        profilePhoneInput.value = userData.phone ?? '';
+    }
+
+    resetProfileSecurityState();
+};
+
+const setProfileEditMode = (isEditing) => {
+    if (!profilePanel) {
+        return;
+    }
+
+    if (isEditing) {
+        profilePanel.setAttribute('data-editing', 'true');
+        profileDataView?.setAttribute('hidden', 'hidden');
+        profileEditForm?.removeAttribute('hidden');
+        editProfileButton?.setAttribute('hidden', 'hidden');
+        const firstField = profileEditForm?.querySelector('input:not([readonly]):not([type="hidden"])');
+        if (firstField instanceof HTMLInputElement) {
+            firstField.focus();
+        }
+    } else {
+        profilePanel.removeAttribute('data-editing');
+        profileDataView?.removeAttribute('hidden');
+        profileEditForm?.setAttribute('hidden', 'hidden');
+        editProfileButton?.removeAttribute('hidden');
+        resetProfileSecurityState();
+    }
+};
+
+const persistActiveUser = () => {
+    if (!activeUser) {
+        return;
+    }
+
+    sessionStorage.setItem('fibaroUser', JSON.stringify(activeUser));
+};
+
+const handleAvatarFile = (file) => {
+    if (!file || !file.type.startsWith('image/')) {
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        const result = reader.result;
+
+        if (typeof result !== 'string') {
+            return;
+        }
+
+        if (activeUser) {
+            activeUser = {
+                ...activeUser,
+                avatar: result
+            };
+            persistActiveUser();
+            persistCurrentUserOverride({ avatar: result });
+            populateProfile(activeUser);
+        }
+
+        if (avatarInput) {
+            avatarInput.value = '';
+        }
+    };
+
+    reader.readAsDataURL(file);
 };
 
 const initializeDashboard = () => {
@@ -260,8 +489,27 @@ const initializeDashboard = () => {
         return;
     }
 
-    renderRoleDashboard(userData.role);
-    populateProfile(userData);
+    if (!userData?.role) {
+        sessionStorage.removeItem('fibaroUser');
+        window.location.replace('index.html');
+        return;
+    }
+
+    userData.avatar = userData.avatar || defaultAvatar;
+    userData.phone = userData.phone ?? '';
+
+    if (!userData.password && userData.username) {
+        const mergedCredential = getMergedCredential(userData.username);
+        if (mergedCredential?.password) {
+            userData.password = mergedCredential.password;
+        }
+    }
+
+    activeUser = userData;
+
+    renderRoleDashboard(activeUser.role);
+    populateProfile(activeUser);
+    setProfileEditMode(false);
 
     if (logoutButton) {
         logoutButton.addEventListener('click', () => {
@@ -278,10 +526,176 @@ const initializeDashboard = () => {
 
             const isHidden = profilePanel.hasAttribute('hidden');
             if (isHidden) {
+                setProfileEditMode(false);
+                if (activeUser) {
+                    populateProfile(activeUser);
+                }
                 profilePanel.removeAttribute('hidden');
                 profilePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } else {
+                setProfileEditMode(false);
                 profilePanel.setAttribute('hidden', 'hidden');
+            }
+        });
+    }
+
+    if (editProfileButton) {
+        editProfileButton.addEventListener('click', () => {
+            if (!activeUser) {
+                return;
+            }
+
+            populateProfile(activeUser);
+            setProfileEditMode(true);
+        });
+    }
+
+    if (cancelEditButton) {
+        cancelEditButton.addEventListener('click', () => {
+            if (activeUser) {
+                populateProfile(activeUser);
+            }
+            setProfileEditMode(false);
+        });
+    }
+
+    if (profileEditForm) {
+        profileEditForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            if (!profileEditForm.checkValidity()) {
+                profileEditForm.reportValidity();
+                return;
+            }
+
+            if (!activeUser) {
+                return;
+            }
+
+            clearProfilePasswordFeedback();
+
+            const trimmedEmail = profileEmailInput?.value.trim() ?? '';
+            const trimmedPhone = profilePhoneInput?.value.trim() ?? '';
+
+            const updatedUser = {
+                ...activeUser,
+                email: trimmedEmail,
+                phone: trimmedPhone
+            };
+
+            const currentPasswordValue = (profileCurrentPasswordInput?.value ?? '').trim();
+            const newPasswordValue = (profileNewPasswordInput?.value ?? '').trim();
+            const confirmPasswordValue = (profileConfirmPasswordInput?.value ?? '').trim();
+
+            const wantsPasswordChange =
+                currentPasswordValue.length > 0 ||
+                newPasswordValue.length > 0 ||
+                confirmPasswordValue.length > 0;
+
+            if (wantsPasswordChange) {
+                if (!currentPasswordValue) {
+                    showProfilePasswordFeedback('Introduce tu contraseña actual para poder actualizarla.');
+                    profileCurrentPasswordInput?.focus();
+                    return;
+                }
+
+                if (currentPasswordValue !== activeUser.password) {
+                    showProfilePasswordFeedback('La contraseña actual no es correcta.');
+                    if (profileCurrentPasswordInput) {
+                        profileCurrentPasswordInput.focus();
+                        profileCurrentPasswordInput.select();
+                    }
+                    return;
+                }
+
+                if (!newPasswordValue || !confirmPasswordValue) {
+                    showProfilePasswordFeedback('Escribe y confirma tu nueva contraseña.');
+                    if (!newPasswordValue) {
+                        profileNewPasswordInput?.focus();
+                    } else {
+                        profileConfirmPasswordInput?.focus();
+                    }
+                    return;
+                }
+
+                if (newPasswordValue !== confirmPasswordValue) {
+                    showProfilePasswordFeedback('La nueva contraseña no coincide en ambos campos.');
+                    profileConfirmPasswordInput?.focus();
+                    profileConfirmPasswordInput?.select();
+                    return;
+                }
+
+                if (newPasswordValue === activeUser.password) {
+                    showProfilePasswordFeedback('La nueva contraseña debe ser diferente a la actual.');
+                    profileNewPasswordInput?.focus();
+                    profileNewPasswordInput?.select();
+                    return;
+                }
+
+                updatedUser.password = newPasswordValue;
+            }
+
+            activeUser = updatedUser;
+            persistActiveUser();
+            persistCurrentUserOverride({
+                email: updatedUser.email,
+                phone: updatedUser.phone,
+                ...(updatedUser.password ? { password: updatedUser.password } : {})
+            });
+            populateProfile(activeUser);
+            setProfileEditMode(false);
+        });
+    }
+
+    if (avatarSelectButton) {
+        avatarSelectButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            avatarInput?.click();
+        });
+    }
+
+    if (avatarInput) {
+        avatarInput.addEventListener('change', (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLInputElement) || !target.files?.length) {
+                return;
+            }
+
+            const [file] = target.files;
+            handleAvatarFile(file);
+        });
+    }
+
+    if (avatarDropzone) {
+        const clearDragState = () => {
+            avatarDropzone.classList.remove('is-dragover');
+        };
+
+        avatarDropzone.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            avatarDropzone.classList.add('is-dragover');
+        });
+
+        avatarDropzone.addEventListener('dragleave', (event) => {
+            event.preventDefault();
+            clearDragState();
+        });
+
+        avatarDropzone.addEventListener('drop', (event) => {
+            event.preventDefault();
+            clearDragState();
+            const file = event.dataTransfer?.files?.[0];
+            handleAvatarFile(file ?? null);
+        });
+
+        avatarDropzone.addEventListener('click', () => {
+            avatarInput?.click();
+        });
+
+        avatarDropzone.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                avatarInput?.click();
             }
         });
     }
@@ -310,7 +724,7 @@ if (loginForm) {
 
         const username = loginForm.username.value.trim().toLowerCase();
         const password = loginForm.password.value.trim();
-        const user = credentials[username];
+        const user = getMergedCredential(username);
 
         loginFeedback?.classList.remove('error');
 
@@ -328,7 +742,10 @@ if (loginForm) {
             role: user.role,
             name: user.name,
             email: user.email,
-            lastLogin: new Date().toISOString()
+            phone: user.phone ?? '',
+            avatar: user.avatar ?? defaultAvatar,
+            lastLogin: new Date().toISOString(),
+            password: user.password
         };
 
         sessionStorage.setItem('fibaroUser', JSON.stringify(loginData));

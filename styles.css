@@ -116,8 +116,16 @@ form {
     font-weight: 600;
 }
 
+.form-field-note {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted);
+}
+
 input[type="text"],
-input[type="password"] {
+input[type="password"],
+input[type="email"],
+input[type="tel"] {
     padding: 0.85rem 1rem;
     border-radius: 14px;
     border: 1px solid rgba(27, 36, 50, 0.15);
@@ -127,15 +135,24 @@ input[type="password"] {
 }
 
 input[type="text"]:focus,
-input[type="password"]:focus {
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus {
     outline: none;
     border-color: var(--primary);
     background: #fff;
     box-shadow: 0 0 0 4px rgba(29, 95, 191, 0.15);
 }
 
+input[readonly] {
+    cursor: not-allowed;
+    background: #eef2fb;
+    color: rgba(27, 36, 50, 0.6);
+}
+
 .primary-button,
-.secondary-button {
+.secondary-button,
+.ghost-button {
     border: none;
     border-radius: 14px;
     font-weight: 600;
@@ -164,6 +181,19 @@ input[type="password"]:focus {
     transform: translateY(-1px);
 }
 
+.ghost-button {
+    background: transparent;
+    color: var(--primary);
+    border: 1px dashed rgba(29, 95, 191, 0.35);
+    transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.ghost-button:hover {
+    transform: translateY(-1px);
+    border-color: var(--primary);
+    color: var(--primary-dark);
+}
+
 .feedback {
     min-height: 1.25rem;
     font-size: 0.9rem;
@@ -172,6 +202,10 @@ input[type="password"]:focus {
 
 .feedback.error {
     color: #d13f3f;
+}
+
+.feedback.success {
+    color: #1d7a48;
 }
 
 .role-dashboard {
@@ -229,12 +263,23 @@ input[type="password"]:focus {
     background: rgba(240, 244, 251, 0.55);
     display: grid;
     gap: 1.5rem;
+    align-content: start;
 }
 
 .profile-header {
     display: flex;
     align-items: center;
     gap: 1rem;
+}
+
+.profile-summary {
+    display: grid;
+    gap: 0.6rem;
+    align-items: flex-start;
+}
+
+.profile-summary .secondary-button {
+    justify-self: flex-start;
 }
 
 .profile-avatar {
@@ -249,6 +294,40 @@ input[type="password"]:focus {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.avatar-dropzone {
+    border: 2px dashed rgba(29, 95, 191, 0.25);
+    border-radius: 16px;
+    padding: 1.25rem;
+    display: grid;
+    gap: 0.5rem;
+    text-align: center;
+    background: rgba(29, 95, 191, 0.05);
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.avatar-dropzone:hover,
+.avatar-dropzone:focus {
+    border-color: rgba(29, 95, 191, 0.6);
+    background: rgba(29, 95, 191, 0.08);
+    outline: none;
+    transform: translateY(-1px);
+}
+
+.avatar-dropzone.is-dragover {
+    border-color: var(--primary);
+    background: rgba(29, 95, 191, 0.15);
+}
+
+.avatar-dropzone-title {
+    font-weight: 700;
+    color: var(--primary-dark);
+}
+
+.avatar-dropzone-hint {
+    color: var(--muted);
+    font-size: 0.9rem;
 }
 
 .profile-details {
@@ -271,6 +350,65 @@ input[type="password"]:focus {
 .profile-role {
     color: var(--muted);
     font-weight: 600;
+}
+
+.profile-personal-footer {
+    display: grid;
+    gap: 1rem;
+    margin-top: auto;
+}
+
+.profile-edit-form {
+    display: grid;
+    gap: 1rem;
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.25rem;
+    border: 1px solid rgba(27, 36, 50, 0.08);
+    box-shadow: 0 12px 28px rgba(21, 53, 104, 0.08);
+}
+
+.profile-edit-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.profile-password-section {
+    display: grid;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(27, 36, 50, 0.08);
+}
+
+.profile-password-section h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.section-hint {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.profile-password-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.profile-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.profile-last-login-note {
+    color: var(--muted);
+    font-size: 0.85rem;
 }
 
 .god-dashboard,
@@ -368,6 +506,10 @@ input[type="password"]:focus {
 
     .profile-details {
         grid-template-columns: 1fr;
+    }
+
+    .profile-edit-actions {
+        justify-content: stretch;
     }
 }
 
