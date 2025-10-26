@@ -14,9 +14,15 @@ const departmentPanel = document.getElementById('department-panel');
 const profileButton = document.getElementById('profile-button');
 const profilePanel = document.getElementById('profile-panel');
 const profileRole = document.getElementById('profile-role');
-const profileName = document.getElementById('profile-name');
-const profileEmail = document.getElementById('profile-email');
 const profileLastLogin = document.getElementById('profile-last-login');
+const profileForm = document.getElementById('profile-form');
+const profileNameInput = document.getElementById('profile-name-input');
+const profileEmailInput = document.getElementById('profile-email-input');
+const profilePhoneInput = document.getElementById('profile-phone-input');
+const profilePhotoInput = document.getElementById('profile-photo-input');
+const profileCancelButton = document.getElementById('profile-cancel-button');
+const profileAvatarImage = document.getElementById('profile-avatar');
+const profileThumbnail = document.getElementById('profile-thumbnail');
 
 const rolesContent = {
     dios: {
@@ -104,24 +110,89 @@ const departmentContent = {
     }
 };
 
+const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80';
+
 const credentials = {
     admin: {
         password: 'admin',
         role: 'dios',
         name: 'Alexandra Rivera',
-        email: 'alexandra.rivera@fibaro.com'
+        email: 'alexandra.rivera@fibaro.com',
+        phone: '+34 600 123 456',
+        avatar: DEFAULT_AVATAR
     },
     delegado: {
         password: 'delegado',
         role: 'delegado',
         name: 'Marcos Pérez',
-        email: 'marcos.perez@fibaro.com'
+        email: 'marcos.perez@fibaro.com',
+        phone: '+34 600 789 012',
+        avatar: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=96&q=80'
     },
     empleado: {
         password: 'empleado',
         role: 'empleado',
         name: 'Lucía Gómez',
-        email: 'lucia.gomez@fibaro.com'
+        email: 'lucia.gomez@fibaro.com',
+        phone: '+34 600 456 789',
+        avatar: 'https://images.unsplash.com/photo-1544723795-432537dcf0e1?auto=format&fit=crop&w=96&q=80'
+    }
+};
+
+let currentUser = null;
+let pendingAvatarData = null;
+
+const updateAvatar = (source) => {
+    const avatarSource = source || DEFAULT_AVATAR;
+
+    if (profileAvatarImage) {
+        profileAvatarImage.src = avatarSource;
+    }
+
+    if (profileThumbnail) {
+        profileThumbnail.src = avatarSource;
+    }
+};
+
+const closeProfilePanel = (reset = false) => {
+    if (!profilePanel) {
+        return;
+    }
+
+    const wasHidden = profilePanel.hasAttribute('hidden');
+
+    if (!wasHidden) {
+        profilePanel.setAttribute('hidden', 'hidden');
+        profileButton?.setAttribute('aria-expanded', 'false');
+    }
+
+    if (reset && currentUser) {
+        populateProfile(currentUser);
+    }
+
+    pendingAvatarData = null;
+};
+
+const openProfilePanel = () => {
+    if (!profilePanel) {
+        return;
+    }
+
+    populateProfile(currentUser);
+    profilePanel.removeAttribute('hidden');
+    profileButton?.setAttribute('aria-expanded', 'true');
+    profileNameInput?.focus();
+};
+
+const toggleProfilePanel = () => {
+    if (!profilePanel) {
+        return;
+    }
+
+    if (profilePanel.hasAttribute('hidden')) {
+        openProfilePanel();
+    } else {
+        closeProfilePanel(true);
     }
 };
 
@@ -182,7 +253,7 @@ const handleDepartmentClick = (event) => {
     });
 
     renderDepartment(target.dataset.department);
-    profilePanel?.setAttribute('hidden', 'hidden');
+    closeProfilePanel(true);
 };
 
 const renderRoleDashboard = (roleKey) => {
@@ -196,7 +267,7 @@ const renderRoleDashboard = (roleKey) => {
         standardDashboard?.setAttribute('hidden', 'hidden');
         godDashboard?.removeAttribute('hidden');
         buildDepartmentTabs();
-        profilePanel?.setAttribute('hidden', 'hidden');
+        closeProfilePanel(true);
         if (roleTitle) roleTitle.textContent = '';
         if (roleDescription) roleDescription.textContent = '';
         if (roleMenu) roleMenu.innerHTML = '';
@@ -206,7 +277,7 @@ const renderRoleDashboard = (roleKey) => {
         if (roleTitle) roleTitle.textContent = roleInfo.title;
         if (roleDescription) roleDescription.textContent = roleInfo.description;
         if (roleMenu) roleMenu.innerHTML = roleInfo.menu.map((item) => `<li>${item}</li>`).join('');
-        profilePanel?.setAttribute('hidden', 'hidden');
+        closeProfilePanel(true);
     }
 
     roleDashboard?.removeAttribute('hidden');
@@ -223,12 +294,16 @@ const populateProfile = (userData) => {
         profileRole.textContent = rolesContent[userData.role]?.title ?? '';
     }
 
-    if (profileName) {
-        profileName.textContent = userData.name;
+    if (profileNameInput) {
+        profileNameInput.value = userData.name ?? '';
     }
 
-    if (profileEmail) {
-        profileEmail.textContent = userData.email;
+    if (profileEmailInput) {
+        profileEmailInput.value = userData.email ?? '';
+    }
+
+    if (profilePhoneInput) {
+        profilePhoneInput.value = userData.phone ?? '';
     }
 
     if (profileLastLogin) {
@@ -240,6 +315,85 @@ const populateProfile = (userData) => {
             : '';
         profileLastLogin.textContent = formatted;
     }
+
+    updateAvatar(userData.avatar);
+
+    if (profilePhotoInput) {
+        profilePhotoInput.value = '';
+    }
+};
+
+const handleDocumentClick = (event) => {
+    if (!profilePanel || profilePanel.hasAttribute('hidden')) {
+        return;
+    }
+
+    const target = event.target;
+
+    if (profilePanel.contains(target) || profileButton?.contains(target)) {
+        return;
+    }
+
+    closeProfilePanel(true);
+};
+
+const handleEscapeKey = (event) => {
+    if (event.key === 'Escape') {
+        closeProfilePanel(true);
+    }
+};
+
+const handlePhotoChange = (event) => {
+    const input = event.target;
+
+    if (!(input instanceof HTMLInputElement) || !input.files || input.files.length === 0) {
+        pendingAvatarData = null;
+        if (currentUser) {
+            updateAvatar(currentUser.avatar);
+        }
+        return;
+    }
+
+    const [file] = input.files;
+
+    if (!file) {
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+        if (typeof reader.result === 'string') {
+            pendingAvatarData = reader.result;
+            updateAvatar(reader.result);
+        }
+    });
+    reader.readAsDataURL(file);
+};
+
+const handleProfileSubmit = (event) => {
+    event.preventDefault();
+
+    if (!currentUser) {
+        return;
+    }
+
+    const updatedUser = {
+        ...currentUser,
+        name: profileNameInput?.value.trim() || currentUser.name,
+        email: profileEmailInput?.value.trim() || currentUser.email,
+        phone: profilePhoneInput?.value.trim() || currentUser.phone,
+        avatar: pendingAvatarData ?? currentUser.avatar
+    };
+
+    currentUser = updatedUser;
+    sessionStorage.setItem('fibaroUser', JSON.stringify(updatedUser));
+    populateProfile(updatedUser);
+    pendingAvatarData = null;
+    closeProfilePanel();
+};
+
+const handleProfileCancel = () => {
+    closeProfilePanel(true);
 };
 
 const initializeDashboard = () => {
@@ -260,8 +414,22 @@ const initializeDashboard = () => {
         return;
     }
 
-    renderRoleDashboard(userData.role);
-    populateProfile(userData);
+    const credentialDefaults = userData?.username ? credentials[userData.username] : undefined;
+
+    currentUser = {
+        username: userData.username,
+        role: userData.role ?? credentialDefaults?.role ?? '',
+        name: userData.name ?? credentialDefaults?.name ?? '',
+        email: userData.email ?? credentialDefaults?.email ?? '',
+        phone: userData.phone ?? credentialDefaults?.phone ?? '',
+        avatar: userData.avatar ?? credentialDefaults?.avatar ?? DEFAULT_AVATAR,
+        lastLogin: userData.lastLogin ?? ''
+    };
+
+    sessionStorage.setItem('fibaroUser', JSON.stringify(currentUser));
+
+    renderRoleDashboard(currentUser.role);
+    populateProfile(currentUser);
 
     if (logoutButton) {
         logoutButton.addEventListener('click', () => {
@@ -271,20 +439,23 @@ const initializeDashboard = () => {
     }
 
     if (profileButton) {
-        profileButton.addEventListener('click', () => {
-            if (!profilePanel) {
-                return;
-            }
-
-            const isHidden = profilePanel.hasAttribute('hidden');
-            if (isHidden) {
-                profilePanel.removeAttribute('hidden');
-                profilePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else {
-                profilePanel.setAttribute('hidden', 'hidden');
-            }
-        });
+        profileButton.addEventListener('click', toggleProfilePanel);
     }
+
+    if (profileForm) {
+        profileForm.addEventListener('submit', handleProfileSubmit);
+    }
+
+    if (profileCancelButton) {
+        profileCancelButton.addEventListener('click', handleProfileCancel);
+    }
+
+    if (profilePhotoInput) {
+        profilePhotoInput.addEventListener('change', handlePhotoChange);
+    }
+
+    document.addEventListener('click', handleDocumentClick);
+    document.addEventListener('keydown', handleEscapeKey);
 
     if (departmentTabs) {
         departmentTabs.addEventListener('click', handleDepartmentClick);
@@ -328,6 +499,8 @@ if (loginForm) {
             role: user.role,
             name: user.name,
             email: user.email,
+            phone: user.phone,
+            avatar: user.avatar,
             lastLogin: new Date().toISOString()
         };
 
