@@ -210,8 +210,10 @@ const toggleCreateUserForm = (shouldShow) => {
     }
 };
 
+const godViews = new Set(['departments', 'users', 'profile']);
+
 const setGodView = (viewKey) => {
-    const normalizedView = viewKey === 'users' ? 'users' : 'departments';
+    const normalizedView = godViews.has(viewKey) ? viewKey : 'departments';
     activeGodView = normalizedView;
 
     if (godViewSwitch) {
@@ -222,16 +224,35 @@ const setGodView = (viewKey) => {
         });
     }
 
+    if (normalizedView === 'departments') {
+        godDepartmentView?.removeAttribute('hidden');
+        userManagementPanel?.setAttribute('hidden', 'hidden');
+        toggleCreateUserForm(false);
+        showUserManagementFeedback('');
+        setProfileEditMode(false);
+        profilePanel?.setAttribute('hidden', 'hidden');
+        return;
+    }
+
     if (normalizedView === 'users') {
         godDepartmentView?.setAttribute('hidden', 'hidden');
         userManagementPanel?.removeAttribute('hidden');
+        profilePanel?.setAttribute('hidden', 'hidden');
+        setProfileEditMode(false);
         renderUserList();
-    } else {
-        userManagementPanel?.setAttribute('hidden', 'hidden');
-        godDepartmentView?.removeAttribute('hidden');
-        toggleCreateUserForm(false);
-        showUserManagementFeedback('');
+        return;
     }
+
+    godDepartmentView?.setAttribute('hidden', 'hidden');
+    userManagementPanel?.setAttribute('hidden', 'hidden');
+    toggleCreateUserForm(false);
+    showUserManagementFeedback('');
+    if (activeUser) {
+        populateProfile(activeUser);
+    }
+    setProfileEditMode(false);
+    profilePanel?.removeAttribute('hidden');
+    profilePanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
 const buildRoleOptions = (selectedRole) =>
@@ -283,6 +304,13 @@ const renderUserList = () => {
                             <select data-field="role">
                                 ${roleOptions}
                             </select>
+                        </label>
+                    </div>
+                    <div class="user-card-security">
+                        <label class="form-field">
+                            <span>Nueva contraseña</span>
+                            <input type="password" data-field="password" placeholder="Escribe una nueva contraseña">
+                            <p class="form-field-note">Deja en blanco para mantener la actual.</p>
                         </label>
                     </div>
                     <div class="user-card-actions">
@@ -620,7 +648,9 @@ const renderRoleDashboard = (roleKey) => {
         buildDepartmentTabs();
         setGodView(activeGodView);
         toggleCreateUserForm(false);
-        profilePanel?.setAttribute('hidden', 'hidden');
+        if (activeGodView !== 'profile') {
+            profilePanel?.setAttribute('hidden', 'hidden');
+        }
         if (roleTitle) roleTitle.textContent = '';
         if (roleDescription) roleDescription.textContent = '';
         if (roleMenu) roleMenu.innerHTML = '';
@@ -820,16 +850,19 @@ const initializeDashboard = () => {
 
     if (profileButton) {
         profileButton.addEventListener('click', () => {
-            if (!profilePanel) {
+            if (!profilePanel || !activeUser) {
+                return;
+            }
+
+            if (activeUser.role === 'dios') {
+                setGodView('profile');
                 return;
             }
 
             const isHidden = profilePanel.hasAttribute('hidden');
             if (isHidden) {
                 setProfileEditMode(false);
-                if (activeUser) {
-                    populateProfile(activeUser);
-                }
+                populateProfile(activeUser);
                 profilePanel.removeAttribute('hidden');
                 profilePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } else {
@@ -1070,10 +1103,12 @@ const initializeDashboard = () => {
                 const nameField = card.querySelector('input[data-field="name"]');
                 const emailField = card.querySelector('input[data-field="email"]');
                 const roleField = card.querySelector('select[data-field="role"]');
+                const passwordField = card.querySelector('input[data-field="password"]');
 
                 const nameValue = typeof nameField?.value === 'string' ? nameField.value.trim() : '';
                 const emailValue = typeof emailField?.value === 'string' ? emailField.value.trim() : '';
                 const roleValue = roleField?.value ?? 'empleado';
+                const passwordValue = typeof passwordField?.value === 'string' ? passwordField.value.trim() : '';
 
                 if (!nameValue) {
                     showUserManagementFeedback('El nombre no puede quedar vacío.', true);
@@ -1081,11 +1116,27 @@ const initializeDashboard = () => {
                     return;
                 }
 
-                applyUserUpdates(username, {
+                if (passwordValue && passwordValue.length < 4) {
+                    showUserManagementFeedback('La nueva contraseña debe tener al menos 4 caracteres.', true);
+                    passwordField?.focus();
+                    return;
+                }
+
+                const updates = {
                     name: nameValue,
                     email: emailValue,
                     role: roleValue
-                });
+                };
+
+                if (passwordValue) {
+                    updates.password = passwordValue;
+                }
+
+                applyUserUpdates(username, updates);
+
+                if (passwordField) {
+                    passwordField.value = '';
+                }
             }
 
             if (action === 'delete') {

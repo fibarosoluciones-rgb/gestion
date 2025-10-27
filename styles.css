@@ -589,6 +589,19 @@ input[readonly] {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
+.user-card-security {
+    border-top: 1px solid rgba(27, 36, 50, 0.08);
+    padding-top: 1rem;
+}
+
+.user-card-security .form-field {
+    max-width: 320px;
+}
+
+.user-card-security .form-field-note {
+    margin: 0;
+}
+
 .user-card-actions {
     display: flex;
     justify-content: flex-end;
