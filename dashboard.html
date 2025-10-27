@@ -13,17 +13,25 @@
     <main class="auth-layout">
         <section id="role-dashboard" class="card role-dashboard" hidden>
             <header class="dashboard-header">
-                <div class="brand compact">
-                    <div class="logo" aria-hidden="true">F</div>
-                    <div>
-                        <p class="brand-name">FÍBARO</p>
-                        <p class="brand-tagline">Panel interno</p>
-                    </div>
-                </div>
-                <div class="dashboard-actions">
+                <div class="dashboard-topbar">
                     <button id="profile-button" type="button" class="profile-button" aria-haspopup="dialog">
                         <img id="profile-button-image" src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80" alt="Ver perfil" loading="lazy">
                     </button>
+                    <div class="brand compact">
+                        <div class="logo" aria-hidden="true">F</div>
+                        <div>
+                            <p class="brand-name">FÍBARO</p>
+                            <p class="brand-tagline">Panel interno</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-toolbar">
+                    <div id="god-view-switch" class="god-view-switch" role="tablist" aria-label="Vistas de administración" hidden>
+                        <button type="button" role="tab" data-view="agenda" aria-selected="true">Agenda</button>
+                        <button type="button" role="tab" data-view="departments" aria-selected="false">Departamentos</button>
+                        <button type="button" role="tab" data-view="users" aria-selected="false">Usuarios</button>
+                        <button type="button" role="tab" data-view="profile" aria-selected="false">Mis datos</button>
+                    </div>
                     <button id="logout-button" type="button" class="secondary-button">Cerrar sesión</button>
                 </div>
             </header>
@@ -113,14 +121,83 @@
             </section>
 
             <section id="god-dashboard" class="god-dashboard" hidden>
-                <h1 class="role-title">Modo Dios</h1>
-                <p class="role-description">Supervisa todos los departamentos, controla los usuarios y visualiza sus indicadores clave en un solo lugar.</p>
+                <section id="god-agenda-view" class="god-panel god-agenda" hidden aria-live="polite">
+                    <div class="agenda-grid">
+                        <article class="agenda-card">
+                            <header>
+                                <h2>Mi agenda</h2>
+                                <p>Organiza tus tareas y recordatorios personales del día.</p>
+                            </header>
+                            <form id="personal-agenda-form" class="agenda-form" novalidate>
+                                <label class="form-field" for="personal-agenda-title">
+                                    <span>Título</span>
+                                    <input id="personal-agenda-title" name="title" type="text" required placeholder="Reunión de seguimiento">
+                                </label>
+                                <label class="form-field" for="personal-agenda-description">
+                                    <span>Descripción</span>
+                                    <textarea id="personal-agenda-description" name="description" rows="3" placeholder="Anota detalles o puntos clave"></textarea>
+                                </label>
+                                <div class="agenda-form-grid">
+                                    <label class="form-field" for="personal-agenda-date">
+                                        <span>Fecha</span>
+                                        <input id="personal-agenda-date" name="date" type="date" required>
+                                    </label>
+                                    <label class="form-field" for="personal-agenda-time">
+                                        <span>Hora</span>
+                                        <input id="personal-agenda-time" name="time" type="time">
+                                    </label>
+                                    <label class="form-field" for="personal-agenda-duration">
+                                        <span>Duración</span>
+                                        <input id="personal-agenda-duration" name="duration" type="text" placeholder="ej. 1h 30m">
+                                    </label>
+                                </div>
+                                <button type="submit" class="primary-button">Añadir a mi agenda</button>
+                                <p id="personal-agenda-feedback" class="feedback" role="status" aria-live="polite"></p>
+                            </form>
+                            <p id="personal-agenda-empty" class="agenda-empty">Aún no tienes recordatorios. Empieza creando uno.</p>
+                            <ul id="personal-agenda-list" class="agenda-list" hidden></ul>
+                        </article>
 
-                <div id="god-view-switch" class="god-view-switch" role="tablist" aria-label="Vistas de administración">
-                    <button type="button" role="tab" data-view="departments" aria-selected="true">Departamentos</button>
-                    <button type="button" role="tab" data-view="users" aria-selected="false">Usuarios</button>
-                    <button type="button" role="tab" data-view="profile" aria-selected="false">Mis datos</button>
-                </div>
+                        <article class="agenda-card">
+                            <header>
+                                <h2>Agenda del equipo</h2>
+                                <p>Comparte recordatorios con uno, varios o todos los usuarios.</p>
+                            </header>
+                            <form id="team-agenda-form" class="agenda-form" novalidate>
+                                <label class="form-field" for="team-agenda-title">
+                                    <span>Título</span>
+                                    <input id="team-agenda-title" name="title" type="text" required placeholder="Agendar revisión de proyecto">
+                                </label>
+                                <label class="form-field" for="team-agenda-description">
+                                    <span>Descripción</span>
+                                    <textarea id="team-agenda-description" name="description" rows="3" placeholder="Incluye los puntos del encuentro"></textarea>
+                                </label>
+                                <div class="agenda-form-grid">
+                                    <label class="form-field" for="team-agenda-date">
+                                        <span>Fecha</span>
+                                        <input id="team-agenda-date" name="date" type="date" required>
+                                    </label>
+                                    <label class="form-field" for="team-agenda-time">
+                                        <span>Hora</span>
+                                        <input id="team-agenda-time" name="time" type="time">
+                                    </label>
+                                    <label class="form-field" for="team-agenda-duration">
+                                        <span>Duración</span>
+                                        <input id="team-agenda-duration" name="duration" type="text" placeholder="ej. 45 minutos">
+                                    </label>
+                                </div>
+                                <fieldset class="agenda-recipient-fieldset">
+                                    <legend>Asignar a</legend>
+                                    <div id="team-agenda-user-list" class="agenda-recipient-list" role="group" aria-label="Usuarios disponibles"></div>
+                                </fieldset>
+                                <button type="submit" class="primary-button">Crear anotación para el equipo</button>
+                                <p id="team-agenda-feedback" class="feedback" role="status" aria-live="polite"></p>
+                            </form>
+                            <p id="team-agenda-empty" class="agenda-empty">Aún no hay anotaciones compartidas.</p>
+                            <ul id="team-agenda-list" class="agenda-list" hidden></ul>
+                        </article>
+                    </div>
+                </section>
 
                 <section id="god-department-view" class="god-panel" aria-labelledby="department-tabs">
                     <nav id="department-tabs" class="department-tabs" aria-label="Departamentos"></nav>
@@ -180,6 +257,11 @@
                 <nav aria-label="Menú principal">
                     <ul id="role-menu" class="role-menu"></ul>
                 </nav>
+                <section id="user-agenda-section" class="user-agenda" hidden aria-live="polite">
+                    <h2>Mis anotaciones asignadas</h2>
+                    <p id="user-agenda-empty" class="agenda-empty">No tienes anotaciones asignadas.</p>
+                    <ul id="user-agenda-list" class="agenda-list" hidden></ul>
+                </section>
             </section>
         </section>
     </main>
