@@ -35,6 +35,14 @@ const cancelEditButton = document.getElementById('cancel-edit-button');
 const avatarInput = document.getElementById('avatar-input');
 const avatarDropzone = document.getElementById('avatar-dropzone');
 const avatarSelectButton = document.getElementById('avatar-select-button');
+const godViewSwitch = document.getElementById('god-view-switch');
+const godDepartmentView = document.getElementById('god-department-view');
+const userManagementPanel = document.getElementById('user-management-panel');
+const userList = document.getElementById('user-list');
+const toggleCreateUserButton = document.getElementById('toggle-create-user');
+const createUserForm = document.getElementById('create-user-form');
+const cancelCreateUserButton = document.getElementById('cancel-create-user');
+const userManagementFeedback = document.getElementById('user-management-feedback');
 
 const defaultAvatar =
     'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=256&q=80';
@@ -42,6 +50,22 @@ const defaultAvatar =
 const CREDENTIAL_OVERRIDES_KEY = 'fibaroCredentialOverrides';
 
 let activeUser = null;
+let activeGodView = 'departments';
+
+const escapeHtml = (value) => {
+    if (value === undefined || value === null) {
+        return '';
+    }
+
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+};
+
+const escapeAttribute = (value) => escapeHtml(value).replace(/\n/g, '&#10;');
 
 const readCredentialOverrides = () => {
     if (typeof localStorage === 'undefined') {
@@ -68,6 +92,19 @@ const writeCredentialOverrides = (overrides) => {
     }
 };
 
+const removeCredentialOverride = (username) => {
+    if (!username) {
+        return;
+    }
+
+    const overrides = readCredentialOverrides();
+
+    if (overrides[username]) {
+        delete overrides[username];
+        writeCredentialOverrides(overrides);
+    }
+};
+
 const getMergedCredential = (username) => {
     if (!username) {
         return undefined;
@@ -77,11 +114,41 @@ const getMergedCredential = (username) => {
     const overrides = readCredentialOverrides();
     const overrideData = overrides[username];
 
+    if (overrideData?.disabled) {
+        return undefined;
+    }
+
     if (!baseCredential) {
         return overrideData ? { ...overrideData } : undefined;
     }
 
     return overrideData ? { ...baseCredential, ...overrideData } : { ...baseCredential };
+};
+
+const getAllManagedUsers = () => {
+    const overrides = readCredentialOverrides();
+    const combined = new Map();
+
+    Object.entries(credentials).forEach(([username, data]) => {
+        combined.set(username, { username, ...data });
+    });
+
+    Object.entries(overrides).forEach(([username, data]) => {
+        if (data?.disabled) {
+            combined.delete(username);
+            return;
+        }
+
+        const existing = combined.get(username);
+
+        if (existing) {
+            combined.set(username, { ...existing, ...data, username });
+        } else {
+            combined.set(username, { username, ...data });
+        }
+    });
+
+    return Array.from(combined.values()).sort((a, b) => a.username.localeCompare(b.username));
 };
 
 const persistCredentialOverride = (username, updates) => {
@@ -103,6 +170,237 @@ const persistCurrentUserOverride = (updates) => {
     }
 
     persistCredentialOverride(activeUser.username, updates);
+};
+
+const showUserManagementFeedback = (message, isError = false) => {
+    if (!userManagementFeedback) {
+        return;
+    }
+
+    userManagementFeedback.textContent = message ?? '';
+    const hasMessage = Boolean(message);
+    userManagementFeedback.classList.toggle('error', hasMessage && isError);
+    userManagementFeedback.classList.toggle('success', hasMessage && !isError);
+};
+
+const toggleCreateUserForm = (shouldShow) => {
+    if (!createUserForm) {
+        return;
+    }
+
+    const show = typeof shouldShow === 'boolean' ? shouldShow : createUserForm.hasAttribute('hidden');
+
+    if (show) {
+        createUserForm.removeAttribute('hidden');
+        showUserManagementFeedback('');
+        if (toggleCreateUserButton) {
+            toggleCreateUserButton.textContent = 'Ocultar formulario';
+        }
+        const firstField = createUserForm.querySelector('input, select');
+        if (firstField instanceof HTMLElement) {
+            firstField.focus();
+        }
+    } else {
+        createUserForm.reset();
+        createUserForm.setAttribute('hidden', 'hidden');
+        showUserManagementFeedback('');
+        if (toggleCreateUserButton) {
+            toggleCreateUserButton.textContent = 'Nuevo usuario';
+        }
+    }
+};
+
+const setGodView = (viewKey) => {
+    const normalizedView = viewKey === 'users' ? 'users' : 'departments';
+    activeGodView = normalizedView;
+
+    if (godViewSwitch) {
+        const buttons = godViewSwitch.querySelectorAll('button[data-view]');
+        buttons.forEach((button) => {
+            const isActive = button.dataset.view === normalizedView;
+            button.setAttribute('aria-selected', String(isActive));
+        });
+    }
+
+    if (normalizedView === 'users') {
+        godDepartmentView?.setAttribute('hidden', 'hidden');
+        userManagementPanel?.removeAttribute('hidden');
+        renderUserList();
+    } else {
+        userManagementPanel?.setAttribute('hidden', 'hidden');
+        godDepartmentView?.removeAttribute('hidden');
+        toggleCreateUserForm(false);
+        showUserManagementFeedback('');
+    }
+};
+
+const buildRoleOptions = (selectedRole) =>
+    Object.entries(rolesContent)
+        .map(([roleKey, info]) => {
+            const isSelected = roleKey === selectedRole;
+            return `<option value="${roleKey}"${isSelected ? ' selected' : ''}>${escapeHtml(info.title)}</option>`;
+        })
+        .join('');
+
+const renderUserList = () => {
+    if (!userList) {
+        return;
+    }
+
+    const users = getAllManagedUsers();
+
+    if (!users.length) {
+        userList.innerHTML = '<p class="user-empty-state">Aún no hay usuarios configurados.</p>';
+        return;
+    }
+
+    userList.innerHTML = users
+        .map((user) => {
+            const displayName = user.name || 'Sin nombre asignado';
+            const roleTitle = rolesContent[user.role]?.title ?? user.role;
+            const roleOptions = buildRoleOptions(user.role);
+            const isSelf = activeUser?.username === user.username;
+            const deleteAttributes = isSelf ? ' disabled aria-disabled="true"' : '';
+
+            return `
+                <article class="user-card" data-username="${escapeAttribute(user.username)}" role="listitem">
+                    <header class="user-card-header">
+                        <h3>${escapeHtml(displayName)}</h3>
+                        <span class="user-role-chip">${escapeHtml(roleTitle)}</span>
+                    </header>
+                    <p class="user-card-username">@${escapeHtml(user.username)}</p>
+                    <div class="user-card-grid">
+                        <label class="form-field">
+                            <span>Nombre</span>
+                            <input type="text" data-field="name" value="${escapeAttribute(user.name ?? '')}" placeholder="Nombre completo">
+                        </label>
+                        <label class="form-field">
+                            <span>Correo</span>
+                            <input type="email" data-field="email" value="${escapeAttribute(user.email ?? '')}" placeholder="usuario@fibaro.com">
+                        </label>
+                        <label class="form-field">
+                            <span>Rol</span>
+                            <select data-field="role">
+                                ${roleOptions}
+                            </select>
+                        </label>
+                    </div>
+                    <div class="user-card-actions">
+                        <button type="button" class="secondary-button" data-action="save">Guardar cambios</button>
+                        <button type="button" class="danger-button" data-action="delete"${deleteAttributes}>Eliminar</button>
+                    </div>
+                </article>
+            `;
+        })
+        .join('');
+};
+
+const applyUserUpdates = (username, updates) => {
+    if (!username || !updates) {
+        return;
+    }
+
+    if (credentials[username]) {
+        persistCredentialOverride(username, updates);
+    } else {
+        const overrides = readCredentialOverrides();
+        overrides[username] = {
+            ...(overrides[username] ?? {}),
+            ...updates
+        };
+        writeCredentialOverrides(overrides);
+    }
+
+    if (activeUser?.username === username) {
+        const roleChanged = updates.role && updates.role !== activeUser.role;
+        activeUser = {
+            ...activeUser,
+            ...updates
+        };
+        persistActiveUser();
+        populateProfile(activeUser);
+        if (roleChanged && activeUser.role) {
+            renderRoleDashboard(activeUser.role);
+        }
+    }
+
+    renderUserList();
+    showUserManagementFeedback('Cambios guardados correctamente.', false);
+};
+
+const createUserAccount = ({ username, name, email, role, password }) => {
+    const normalizedUsername = username?.trim().toLowerCase();
+    const trimmedName = name?.trim();
+    const trimmedEmail = email?.trim();
+    const normalizedRole = role ?? 'empleado';
+    const trimmedPassword = password?.trim();
+
+    if (!normalizedUsername || !/^[a-z0-9._-]{3,}$/i.test(normalizedUsername)) {
+        showUserManagementFeedback('El usuario debe tener al menos 3 caracteres y solo puede contener letras, números, puntos, guiones o guiones bajos.', true);
+        return false;
+    }
+
+    if (!trimmedName) {
+        showUserManagementFeedback('Indica un nombre para la nueva cuenta.', true);
+        return false;
+    }
+
+    if (!trimmedPassword || trimmedPassword.length < 4) {
+        showUserManagementFeedback('La contraseña debe tener al menos 4 caracteres.', true);
+        return false;
+    }
+
+    const overrides = readCredentialOverrides();
+    const existingOverride = overrides[normalizedUsername];
+    const existsInBase = Boolean(credentials[normalizedUsername]);
+
+    if ((existsInBase && !existingOverride?.disabled) || (!existsInBase && existingOverride && !existingOverride.disabled)) {
+        showUserManagementFeedback('Ese nombre de usuario ya está en uso. Elige otro diferente.', true);
+        return false;
+    }
+
+    overrides[normalizedUsername] = {
+        username: normalizedUsername,
+        name: trimmedName,
+        email: trimmedEmail ?? '',
+        role: normalizedRole,
+        password: trimmedPassword,
+        phone: '',
+        avatar: defaultAvatar
+    };
+
+    writeCredentialOverrides(overrides);
+    renderUserList();
+    if (createUserForm) {
+        createUserForm.reset();
+        const firstField = createUserForm.querySelector('input, select');
+        if (firstField instanceof HTMLElement) {
+            firstField.focus();
+        }
+    }
+    showUserManagementFeedback('Usuario creado correctamente.', false);
+    return true;
+};
+
+const deleteUserAccount = (username) => {
+    if (!username) {
+        return;
+    }
+
+    if (credentials[username]) {
+        persistCredentialOverride(username, { disabled: true });
+    } else {
+        removeCredentialOverride(username);
+    }
+
+    if (activeUser?.username === username) {
+        sessionStorage.removeItem('fibaroUser');
+        window.location.replace('index.html');
+        return;
+    }
+
+    renderUserList();
+    showUserManagementFeedback('Usuario eliminado correctamente.', false);
 };
 
 const clearProfilePasswordFeedback = () => {
@@ -320,6 +618,8 @@ const renderRoleDashboard = (roleKey) => {
         standardDashboard?.setAttribute('hidden', 'hidden');
         godDashboard?.removeAttribute('hidden');
         buildDepartmentTabs();
+        setGodView(activeGodView);
+        toggleCreateUserForm(false);
         profilePanel?.setAttribute('hidden', 'hidden');
         if (roleTitle) roleTitle.textContent = '';
         if (roleDescription) roleDescription.textContent = '';
@@ -696,6 +996,106 @@ const initializeDashboard = () => {
             if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
                 avatarInput?.click();
+            }
+        });
+    }
+
+    if (godViewSwitch) {
+        godViewSwitch.addEventListener('click', (event) => {
+            const target = event.target;
+
+            if (!(target instanceof HTMLButtonElement) || !target.dataset.view) {
+                return;
+            }
+
+            setGodView(target.dataset.view);
+        });
+    }
+
+    if (toggleCreateUserButton) {
+        toggleCreateUserButton.addEventListener('click', () => {
+            const shouldShow = createUserForm?.hasAttribute('hidden');
+            toggleCreateUserForm(Boolean(shouldShow));
+        });
+    }
+
+    if (cancelCreateUserButton) {
+        cancelCreateUserButton.addEventListener('click', () => {
+            toggleCreateUserForm(false);
+        });
+    }
+
+    if (createUserForm) {
+        createUserForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const formData = new FormData(createUserForm);
+            createUserAccount({
+                username: formData.get('username'),
+                name: formData.get('name'),
+                email: formData.get('email'),
+                role: formData.get('role'),
+                password: formData.get('password')
+            });
+        });
+    }
+
+    if (userList) {
+        userList.addEventListener('click', (event) => {
+            const target = event.target;
+
+            if (!(target instanceof HTMLElement)) {
+                return;
+            }
+
+            const action = target.dataset.action;
+
+            if (!action) {
+                return;
+            }
+
+            const card = target.closest('.user-card');
+
+            if (!card) {
+                return;
+            }
+
+            const { username } = card.dataset;
+
+            if (!username) {
+                return;
+            }
+
+            if (action === 'save') {
+                const nameField = card.querySelector('input[data-field="name"]');
+                const emailField = card.querySelector('input[data-field="email"]');
+                const roleField = card.querySelector('select[data-field="role"]');
+
+                const nameValue = typeof nameField?.value === 'string' ? nameField.value.trim() : '';
+                const emailValue = typeof emailField?.value === 'string' ? emailField.value.trim() : '';
+                const roleValue = roleField?.value ?? 'empleado';
+
+                if (!nameValue) {
+                    showUserManagementFeedback('El nombre no puede quedar vacío.', true);
+                    nameField?.focus();
+                    return;
+                }
+
+                applyUserUpdates(username, {
+                    name: nameValue,
+                    email: emailValue,
+                    role: roleValue
+                });
+            }
+
+            if (action === 'delete') {
+                const displayName = card.querySelector('input[data-field="name"]')?.value || username;
+
+                if (!window.confirm(`¿Seguro que quieres eliminar la cuenta de "${displayName}"?`)) {
+                    return;
+                }
+
+                deleteUserAccount(username);
             }
         });
     }

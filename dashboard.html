@@ -114,9 +114,63 @@
 
             <section id="god-dashboard" class="god-dashboard" hidden>
                 <h1 class="role-title">Modo Dios</h1>
-                <p class="role-description">Supervisa todos los departamentos y visualiza sus indicadores clave en un solo lugar.</p>
-                <nav id="department-tabs" class="department-tabs" aria-label="Departamentos"></nav>
-                <section id="department-panel" class="department-panel" aria-live="polite"></section>
+                <p class="role-description">Supervisa todos los departamentos, controla los usuarios y visualiza sus indicadores clave en un solo lugar.</p>
+
+                <div id="god-view-switch" class="god-view-switch" role="tablist" aria-label="Vistas de administración">
+                    <button type="button" role="tab" data-view="departments" aria-selected="true">Departamentos</button>
+                    <button type="button" role="tab" data-view="users" aria-selected="false">Usuarios</button>
+                </div>
+
+                <section id="god-department-view" class="god-panel" aria-labelledby="department-tabs">
+                    <nav id="department-tabs" class="department-tabs" aria-label="Departamentos"></nav>
+                    <section id="department-panel" class="department-panel" aria-live="polite"></section>
+                </section>
+
+                <section id="user-management-panel" class="god-panel user-management" hidden aria-live="polite">
+                    <header class="user-management-header">
+                        <div>
+                            <h2>Gestión de usuarios</h2>
+                            <p>Revisa los perfiles existentes, crea nuevas cuentas y otorga permisos avanzados cuando lo necesites.</p>
+                        </div>
+                        <button id="toggle-create-user" type="button" class="primary-button">Nuevo usuario</button>
+                    </header>
+
+                    <form id="create-user-form" class="user-form" hidden novalidate>
+                        <div class="user-form-grid">
+                            <label class="form-field" for="user-username-input">
+                                <span>Usuario</span>
+                                <input id="user-username-input" name="username" type="text" autocomplete="off" required placeholder="ej. jmartinez">
+                            </label>
+                            <label class="form-field" for="user-name-input">
+                                <span>Nombre completo</span>
+                                <input id="user-name-input" name="name" type="text" autocomplete="name" required placeholder="Juan Martínez">
+                            </label>
+                            <label class="form-field" for="user-email-input">
+                                <span>Correo electrónico</span>
+                                <input id="user-email-input" name="email" type="email" autocomplete="email" placeholder="usuario@fibaro.com">
+                            </label>
+                            <label class="form-field" for="user-role-select">
+                                <span>Rol</span>
+                                <select id="user-role-select" name="role" required>
+                                    <option value="dios">Modo Dios</option>
+                                    <option value="delegado" selected>Delegado</option>
+                                    <option value="empleado">Empleado</option>
+                                </select>
+                            </label>
+                            <label class="form-field" for="user-password-input">
+                                <span>Contraseña</span>
+                                <input id="user-password-input" name="password" type="password" autocomplete="new-password" minlength="4" required>
+                            </label>
+                        </div>
+                        <p id="user-management-feedback" class="feedback" role="status" aria-live="polite"></p>
+                        <div class="user-form-actions">
+                            <button id="cancel-create-user" type="button" class="ghost-button">Cancelar</button>
+                            <button type="submit" class="primary-button">Crear usuario</button>
+                        </div>
+                    </form>
+
+                    <div id="user-list" class="user-list" role="list"></div>
+                </section>
             </section>
 
             <section id="standard-dashboard" class="standard-dashboard" hidden>
