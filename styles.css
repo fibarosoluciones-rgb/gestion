@@ -194,6 +194,24 @@ input[readonly] {
     color: var(--primary-dark);
 }
 
+.danger-button {
+    background: rgba(209, 63, 63, 0.12);
+    color: #b02222;
+    border: 1px solid rgba(209, 63, 63, 0.24);
+}
+
+.danger-button:hover:not([disabled]) {
+    transform: translateY(-1px);
+    background: rgba(209, 63, 63, 0.18);
+}
+
+.danger-button[disabled],
+.danger-button[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+}
+
 .feedback {
     min-height: 1.25rem;
     font-size: 0.9rem;
@@ -417,6 +435,42 @@ input[readonly] {
     gap: 1.5rem;
 }
 
+.god-view-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(29, 95, 191, 0.06);
+    border-radius: 999px;
+    align-self: flex-start;
+}
+
+.god-view-switch button {
+    border: none;
+    background: transparent;
+    padding: 0.5rem 1.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.god-view-switch button[aria-selected="true"] {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    box-shadow: 0 14px 30px rgba(29, 95, 191, 0.25);
+}
+
+.god-view-switch button:hover {
+    transform: translateY(-1px);
+}
+
+.god-panel {
+    display: grid;
+    gap: 1.5rem;
+}
+
 .department-tabs {
     display: flex;
     flex-wrap: wrap;
@@ -451,6 +505,104 @@ input[readonly] {
     background: #fff;
     display: grid;
     gap: 1.25rem;
+}
+
+.user-management {
+    gap: 1.75rem;
+}
+
+.user-management-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.user-management-header p {
+    color: var(--muted);
+    max-width: 46ch;
+}
+
+.user-form {
+    border: 1px solid rgba(27, 36, 50, 0.08);
+    border-radius: 18px;
+    padding: clamp(1.25rem, 2.5vw, 1.75rem);
+    background: #fff;
+    display: grid;
+    gap: 1.25rem;
+}
+
+.user-form-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.user-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.user-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.user-card {
+    border: 1px solid rgba(27, 36, 50, 0.08);
+    border-radius: 18px;
+    padding: clamp(1.25rem, 2.5vw, 1.75rem);
+    background: #fff;
+    display: grid;
+    gap: 1rem;
+}
+
+.user-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.user-role-chip {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(29, 95, 191, 0.1);
+    color: var(--primary-dark);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.user-card-username {
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.user-card-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.user-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.user-empty-state {
+    padding: clamp(1.25rem, 2.5vw, 1.75rem);
+    border-radius: 18px;
+    border: 1px dashed rgba(27, 36, 50, 0.15);
+    background: rgba(27, 36, 50, 0.02);
+    color: var(--muted);
+    text-align: center;
 }
 
 .department-header {
@@ -509,6 +661,16 @@ input[readonly] {
     }
 
     .profile-edit-actions {
+        justify-content: stretch;
+    }
+
+    .user-management-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .user-form-actions,
+    .user-card-actions {
         justify-content: stretch;
     }
 }
