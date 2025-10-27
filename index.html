@@ -3,39 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fíbaro | Acceso a la plataforma</title>
+    <title>Fíbaro Kids | Entrar</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <main class="auth-layout">
-        <section id="login-card" class="card login-card" aria-labelledby="login-title">
-            <div class="login-brand" aria-hidden="true">
-                <div class="logo">F</div>
-                <div class="login-brand-text">
-                    <p class="brand-name">FÍBARO</p>
-                    <p class="brand-tagline">Plataforma de gestión</p>
+<body class="kid-body">
+    <main class="kid-login" aria-labelledby="login-title">
+        <section class="kid-login-card">
+            <header class="kid-login-header">
+                <div class="kid-logo" aria-hidden="true">F</div>
+                <div>
+                    <p class="kid-brand">Fíbaro Kids</p>
+                    <p class="kid-slogan">Tu cuaderno de aventuras</p>
                 </div>
-            </div>
-            <h1 id="login-title">Accede a tu panel</h1>
-            <p class="intro">Ingresa con tu usuario y contraseña para continuar a tu menú.</p>
-            <form id="login-form" novalidate>
-                <label class="form-field">
-                    <span>Usuario</span>
-                    <input id="username" name="username" type="text" autocomplete="username" required>
+            </header>
+            <h1 id="login-title">¡Hola explorador!</h1>
+            <p class="kid-text">Escribe tu nombre y tu clave secreta para entrar al panel mágico.</p>
+            <form id="login-form" class="kid-form" novalidate>
+                <label class="kid-field" for="username">
+                    <span>Nombre</span>
+                    <input id="username" name="username" type="text" autocomplete="username" required placeholder="ej. luna">
                 </label>
-                <label class="form-field">
-                    <span>Contraseña</span>
-                    <input id="password" name="password" type="password" autocomplete="current-password" required>
+                <label class="kid-field" for="password">
+                    <span>Clave secreta</span>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="1234">
                 </label>
-                <button type="submit" class="primary-button">Ingresar</button>
-                <p id="login-feedback" class="feedback" role="status" aria-live="polite"></p>
+                <p class="kid-hint">Si no recuerdas tus datos, pide ayuda a un adulto.</p>
+                <button type="submit" class="kid-primary">Entrar</button>
+                <p id="login-feedback" class="kid-feedback" role="status" aria-live="polite"></p>
             </form>
         </section>
     </main>
 
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </body>
 </html>
