@@ -20,6 +20,8 @@ const profileLastLogin = document.getElementById('profile-last-login');
 const profilePhone = document.getElementById('profile-phone');
 const profileAvatarImage = document.getElementById('profile-avatar-image');
 const profileButtonImage = document.getElementById('profile-button-image');
+const sidebarName = document.getElementById('sidebar-name');
+const sidebarRole = document.getElementById('sidebar-role');
 const profileDataView = document.getElementById('profile-data-view');
 const profileEditForm = document.getElementById('profile-edit-form');
 const profileNameInput = document.getElementById('profile-name-input');
@@ -56,6 +58,9 @@ const teamAgendaUserList = document.getElementById('team-agenda-user-list');
 const userAgendaSection = document.getElementById('user-agenda-section');
 const userAgendaList = document.getElementById('user-agenda-list');
 const userAgendaEmpty = document.getElementById('user-agenda-empty');
+const highlightNotes = document.getElementById('highlight-notes');
+const highlightLastLogin = document.getElementById('highlight-last-login');
+const highlightActiveTasks = document.getElementById('highlight-active-tasks');
 
 const defaultAvatar =
     'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=256&q=80';
@@ -452,6 +457,42 @@ const describeAgendaCreator = (entry, directory) => {
     return `Asignado por: ${label}`;
 };
 
+const updateSidebarHighlights = () => {
+    if (!activeUser) {
+        return;
+    }
+
+    if (sidebarName) {
+        sidebarName.textContent = activeUser.name || activeUser.username || 'Usuario';
+    }
+
+    if (sidebarRole) {
+        const roleTitle = rolesContent[activeUser.role]?.title ?? activeUser.role ?? '';
+        sidebarRole.textContent = roleTitle;
+    }
+
+    const formattedLastLogin = formatLastLoginDate(activeUser.lastLogin) || 'Sin registros';
+    if (highlightLastLogin) {
+        highlightLastLogin.textContent = formattedLastLogin || 'Sin registros';
+    }
+
+    const teamEntries = getTeamAgendaEntries();
+    const personalEntries = activeUser.username ? getPersonalAgendaEntries(activeUser.username) : [];
+    const pendingPersonal = personalEntries.filter((entry) => !entry?.completed).length;
+
+    if (highlightNotes) {
+        highlightNotes.textContent = teamEntries.length
+            ? `${teamEntries.length} anotación${teamEntries.length === 1 ? '' : 'es'} compartidas`
+            : 'Sin novedades urgentes';
+    }
+
+    if (highlightActiveTasks) {
+        highlightActiveTasks.textContent = pendingPersonal
+            ? `${pendingPersonal} tarea${pendingPersonal === 1 ? '' : 's'} pendientes`
+            : 'Sin tareas pendientes';
+    }
+};
+
 const renderPersonalAgenda = () => {
     if (!personalAgendaList || !activeUser?.username) {
         return;
@@ -466,22 +507,18 @@ const renderPersonalAgenda = () => {
 
     personalAgendaList.hidden = !hasEntries;
 
-    if (!hasEntries) {
-        personalAgendaList.innerHTML = '';
-        return;
-    }
+    personalAgendaList.innerHTML = hasEntries
+        ? entries
+              .map((entry) => {
+                  const durationLabel = describeAgendaDuration(entry);
+                  const metaParts = [];
+                  if (durationLabel) {
+                      metaParts.push(`<span class="agenda-badge">${escapeHtml(durationLabel)}</span>`);
+                  }
 
-    personalAgendaList.innerHTML = entries
-        .map((entry) => {
-            const durationLabel = describeAgendaDuration(entry);
-            const metaParts = [];
-            if (durationLabel) {
-                metaParts.push(`<span class="agenda-badge">${escapeHtml(durationLabel)}</span>`);
-            }
+                  const metaMarkup = metaParts.length ? `<div class="agenda-meta">${metaParts.join('')}</div>` : '';
 
-            const metaMarkup = metaParts.length ? `<div class="agenda-meta">${metaParts.join('')}</div>` : '';
-
-            return `
+                  return `
                 <li class="agenda-item${entry.completed ? ' is-completed' : ''}" data-id="${escapeAttribute(entry.id)}">
                     <header>
                         <h3>${escapeHtml(entry.title ?? '')}</h3>
@@ -495,8 +532,11 @@ const renderPersonalAgenda = () => {
                     </div>
                 </li>
             `;
-        })
-        .join('');
+              })
+              .join('')
+        : '';
+
+    updateSidebarHighlights();
 };
 
 const renderTeamAgenda = () => {
@@ -515,6 +555,7 @@ const renderTeamAgenda = () => {
 
     if (!hasEntries) {
         teamAgendaList.innerHTML = '';
+        updateSidebarHighlights();
         return;
     }
 
@@ -552,6 +593,8 @@ const renderTeamAgenda = () => {
             `;
         })
         .join('');
+
+    updateSidebarHighlights();
 };
 
 const renderUserAgenda = () => {
@@ -1483,6 +1526,7 @@ const renderRoleDashboard = (roleKey) => {
     roleDashboard?.removeAttribute('hidden');
     authLayout?.classList.add('dashboard-active');
     pageBody?.classList.add('dashboard-mode');
+    updateSidebarHighlights();
 };
 
 const formatLastLoginDate = (value) => {
@@ -1553,6 +1597,7 @@ const populateProfile = (userData) => {
         profilePhoneInput.value = userData.phone ?? '';
     }
 
+    updateSidebarHighlights();
     resetProfileSecurityState();
 };
 
@@ -1857,13 +1902,17 @@ const initializeDashboard = () => {
 
     if (godViewSwitch) {
         godViewSwitch.addEventListener('click', (event) => {
-            const target = event.target;
+            const rawTarget = event.target;
+            const elementTarget = rawTarget instanceof Element ? rawTarget : null;
+            const button = elementTarget instanceof HTMLButtonElement
+                ? elementTarget
+                : elementTarget?.closest('button[data-view]');
 
-            if (!(target instanceof HTMLButtonElement) || !target.dataset.view) {
+            if (!(button instanceof HTMLButtonElement) || !button?.dataset.view) {
                 return;
             }
 
-            setGodView(target.dataset.view);
+            setGodView(button.dataset.view);
         });
     }
 
