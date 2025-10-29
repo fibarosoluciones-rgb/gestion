@@ -36,11 +36,7 @@ body.dashboard-mode {
 }
 
 .auth-layout.dashboard-active {
-    width: min(1200px, 100%);
-}
-
-.app-layout {
-    width: min(1200px, 100%);
+    width: min(1080px, 100%);
 }
 
 .card {
@@ -244,192 +240,34 @@ input[readonly] {
 }
 
 .role-dashboard {
-    display: grid;
-    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
-    gap: clamp(1.5rem, 4vw, 2.5rem);
-    background: var(--card);
-    border-radius: 28px;
-    padding: clamp(1.5rem, 4vw, 2.5rem);
-    box-shadow: 0 30px 80px rgba(21, 53, 104, 0.16);
-}
-
-.dashboard-sidebar {
-    display: grid;
-    gap: 2rem;
-    align-content: start;
-    border-right: 1px solid rgba(27, 36, 50, 0.08);
-    padding-right: clamp(1.5rem, 4vw, 2rem);
-}
-
-.dashboard-content {
-    display: grid;
-    gap: clamp(1.75rem, 4vw, 2.5rem);
+    position: relative;
+    width: min(1024px, 100%);
+    margin-inline: auto;
 }
 
 .dashboard-header {
     display: grid;
-    gap: 1.5rem;
-}
-
-.welcome-subtitle {
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    font-size: 0.8rem;
-    color: var(--muted);
-    font-weight: 700;
-}
-
-.welcome-title {
-    font-size: clamp(1.8rem, 3vw, 2.4rem);
-    font-weight: 700;
-}
-
-.dashboard-highlights {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
 }
 
-.highlight-card {
-    background: linear-gradient(160deg, rgba(29, 95, 191, 0.1), rgba(21, 74, 148, 0.05));
-    border-radius: 20px;
-    padding: 1.25rem;
-    display: grid;
-    gap: 0.5rem;
-}
-
-.highlight-card h2 {
-    font-size: 1rem;
-    color: var(--primary-dark);
-}
-
-.highlight-card p {
-    font-weight: 600;
-}
-
-.sidebar-brand {
+.dashboard-topbar {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     gap: 1rem;
+    flex-wrap: wrap;
 }
 
-.sidebar-brand-text .brand-tagline {
-    letter-spacing: 2px;
-}
-
-.sidebar-profile {
-    display: grid;
-    gap: 0.75rem;
+.dashboard-toolbar {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    text-align: left;
-    justify-items: start;
-}
-
-.sidebar-avatar {
-    width: 96px;
-    height: 96px;
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 20px 35px rgba(21, 53, 104, 0.2);
-}
-
-.sidebar-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.sidebar-name {
-    font-weight: 700;
-    font-size: 1.1rem;
-}
-
-.sidebar-role {
-    color: var(--muted);
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.sidebar-profile-button {
-    justify-self: flex-start;
-}
-
-.sidebar-navigation {
-    display: grid;
     gap: 1rem;
+    flex-wrap: wrap;
 }
 
-.sidebar-navigation h2 {
-    font-size: 0.95rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--muted);
-}
-
-.sidebar-navigation button {
-    text-align: left;
-    border: none;
-    background: rgba(29, 95, 191, 0.05);
-    border-radius: 18px;
-    padding: 1rem 1.1rem;
-    display: grid;
-    gap: 0.25rem;
-    cursor: pointer;
-    color: inherit;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.sidebar-navigation button[aria-selected="true"] {
-    background: linear-gradient(150deg, var(--primary), var(--primary-dark));
-    color: #fff;
-    box-shadow: 0 16px 45px rgba(29, 95, 191, 0.35);
-}
-
-.sidebar-navigation button:hover {
-    transform: translateY(-1px);
-}
-
-.sidebar-navigation button[aria-selected="true"] .nav-description {
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.sidebar-navigation button[aria-selected="true"] .nav-title {
-    color: #fff;
-}
-
-.nav-title {
-    font-weight: 600;
-}
-
-.nav-description {
-    font-size: 0.85rem;
-    color: var(--muted);
-}
-
-.sidebar-quick {
-    display: grid;
-    gap: 0.75rem;
-}
-
-.sidebar-quick h2 {
-    font-size: 0.95rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--muted);
-}
-
-.sidebar-quick ul {
-    list-style: none;
-    display: grid;
-    gap: 0.5rem;
-    font-weight: 600;
-    padding-left: 0;
-}
-
-.sidebar-logout {
-    justify-self: flex-start;
+.dashboard-toolbar > :first-child[hidden] + * {
+    margin-left: auto;
 }
 
 .role-title {
@@ -441,6 +279,23 @@ input[readonly] {
 .role-description {
     color: var(--muted);
     line-height: 1.6;
+}
+
+.profile-button {
+    border: none;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+    border-radius: 50%;
+    overflow: hidden;
+    width: 44px;
+    height: 44px;
+    box-shadow: 0 8px 20px rgba(29, 95, 191, 0.2);
+}
+
+.role-dashboard.god-active .profile-button {
+    width: 64px;
+    height: 64px;
 }
 
 .profile-button img {
@@ -615,7 +470,34 @@ input[readonly] {
 }
 
 .god-view-switch {
-    display: contents;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(29, 95, 191, 0.06);
+    border-radius: 999px;
+    align-self: flex-start;
+}
+
+.god-view-switch button {
+    border: none;
+    background: transparent;
+    padding: 0.5rem 1.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.god-view-switch button[aria-selected="true"] {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    box-shadow: 0 14px 30px rgba(29, 95, 191, 0.25);
+}
+
+.god-view-switch button:hover {
+    transform: translateY(-1px);
 }
 
 .god-panel {
@@ -807,17 +689,9 @@ input[readonly] {
     font-size: 1.2rem;
 }
 
-
-.department-layout {
-    display: grid;
-    gap: 1.5rem;
-    grid-template-columns: minmax(200px, 0.9fr) minmax(0, 2.1fr);
-    align-items: start;
-}
-
 .department-tabs {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 0.75rem;
 }
 
@@ -830,7 +704,6 @@ input[readonly] {
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s ease, transform 0.2s ease;
-    width: 100%;
 }
 
 .department-tabs button[aria-selected="true"] {
@@ -841,121 +714,6 @@ input[readonly] {
 
 .department-tabs button:hover {
     transform: translateY(-1px);
-}
-
-.panel-header {
-    display: grid;
-    gap: 0.5rem;
-    align-items: start;
-}
-
-.panel-header--with-actions {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0.75rem;
-}
-
-.panel-header--with-actions > :last-child {
-    justify-self: end;
-}
-
-.panel-header p {
-    color: var(--muted);
-}
-
-.standard-modules {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.5rem;
-}
-
-.standard-card {
-    border: 1px solid rgba(27, 36, 50, 0.08);
-    border-radius: 20px;
-    padding: clamp(1.5rem, 3vw, 2rem);
-    background: rgba(240, 244, 251, 0.65);
-    display: grid;
-    gap: 1rem;
-}
-
-.standard-card h3 {
-    font-size: 1.1rem;
-}
-
-.role-menu {
-    display: grid;
-    gap: 0.75rem;
-}
-
-.role-menu li {
-    list-style: none;
-    padding: 0.65rem 0.9rem;
-    border-radius: 14px;
-    background: #fff;
-    border: 1px solid rgba(27, 36, 50, 0.08);
-    font-weight: 600;
-}
-
-.user-agenda.standard-card {
-    background: #fff;
-}
-
-@media (max-width: 960px) {
-    body {
-        padding: 1.5rem;
-    }
-
-    .role-dashboard {
-        grid-template-columns: 1fr;
-    }
-
-    .dashboard-sidebar {
-        border-right: none;
-        border-bottom: 1px solid rgba(27, 36, 50, 0.08);
-        padding-right: 0;
-        padding-bottom: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .department-layout {
-        grid-template-columns: 1fr;
-    }
-
-    .department-tabs {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-
-    .department-tabs button {
-        width: auto;
-    }
-}
-
-@media (max-width: 640px) {
-    body {
-        padding: 1rem;
-    }
-
-    .sidebar-avatar {
-        width: 80px;
-        height: 80px;
-        border-radius: 18px;
-    }
-
-    .sidebar-navigation button {
-        padding: 0.85rem 1rem;
-    }
-
-    .dashboard-highlights {
-        grid-template-columns: 1fr;
-    }
-
-    .panel-header--with-actions {
-        grid-template-columns: 1fr;
-    }
-
-    .panel-header--with-actions > :last-child {
-        justify-self: start;
-    }
 }
 
 .department-panel {
