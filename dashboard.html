@@ -10,83 +10,37 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <main class="auth-layout app-layout">
-        <section id="role-dashboard" class="role-dashboard" hidden>
-            <aside class="dashboard-sidebar">
-                <div class="sidebar-brand">
-                    <div class="logo" aria-hidden="true">F</div>
-                    <div class="sidebar-brand-text">
-                        <p class="brand-name">FÍBARO</p>
-                        <p class="brand-tagline">Panel interno</p>
-                    </div>
-                </div>
-                <div class="sidebar-profile">
-                    <div class="sidebar-avatar">
-                        <img id="profile-button-image" src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80" alt="Foto del perfil activo" loading="lazy">
-                    </div>
-                    <div class="sidebar-profile-text">
-                        <p id="sidebar-name" class="sidebar-name">Usuario activo</p>
-                        <p id="sidebar-role" class="sidebar-role">Rol asignado</p>
-                    </div>
-                    <button id="profile-button" type="button" class="ghost-button sidebar-profile-button">Ver y editar perfil</button>
-                </div>
-                <div class="sidebar-navigation" id="god-view-switch" role="tablist" aria-label="Vistas de administración" hidden>
-                    <h2>Modo Dios</h2>
-                    <button type="button" role="tab" data-view="agenda" aria-selected="true">
-                        <span class="nav-title">Agenda inteligente</span>
-                        <span class="nav-description">Gestiona recordatorios personales y compartidos.</span>
+    <main class="auth-layout">
+        <section id="role-dashboard" class="card role-dashboard" hidden>
+            <header class="dashboard-header">
+                <div class="dashboard-topbar">
+                    <button id="profile-button" type="button" class="profile-button" aria-haspopup="dialog">
+                        <img id="profile-button-image" src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80" alt="Ver perfil" loading="lazy">
                     </button>
-                    <button type="button" role="tab" data-view="departments" aria-selected="false">
-                        <span class="nav-title">Departamentos</span>
-                        <span class="nav-description">Revisa la información y métricas clave.</span>
-                    </button>
-                    <button type="button" role="tab" data-view="users" aria-selected="false">
-                        <span class="nav-title">Usuarios</span>
-                        <span class="nav-description">Controla accesos, permisos y cuentas.</span>
-                    </button>
-                    <button type="button" role="tab" data-view="profile" aria-selected="false">
-                        <span class="nav-title">Mis datos</span>
-                        <span class="nav-description">Actualiza tu información personal.</span>
-                    </button>
-                </div>
-                <div class="sidebar-quick">
-                    <h2>Accesos rápidos</h2>
-                    <ul>
-                        <li>📅 Próxima reunión general</li>
-                        <li>🛠️ Revisar mantenimiento</li>
-                        <li>🧾 Facturas por aprobar</li>
-                    </ul>
-                </div>
-                <button id="logout-button" type="button" class="secondary-button sidebar-logout">Cerrar sesión</button>
-            </aside>
-
-            <div class="dashboard-content">
-                <header class="dashboard-header">
-                    <div>
-                        <p class="welcome-subtitle">Panel de control</p>
-                        <h1 class="welcome-title">Organiza, supervisa y toma decisiones</h1>
-                    </div>
-                    <div class="dashboard-highlights">
-                        <article class="highlight-card">
-                            <h2>Notificaciones</h2>
-                            <p id="highlight-notes">Sin novedades urgentes</p>
-                        </article>
-                        <article class="highlight-card">
-                            <h2>Último acceso</h2>
-                            <p id="highlight-last-login">Sin registros</p>
-                        </article>
-                        <article class="highlight-card">
-                            <h2>Tareas activas</h2>
-                            <p id="highlight-active-tasks">Sin tareas pendientes</p>
-                        </article>
-                    </div>
-                </header>
-
-                <section id="profile-panel" class="profile-panel god-panel" hidden aria-labelledby="profile-panel-title">
-                    <div class="profile-header">
-                        <div class="profile-avatar">
-                            <img id="profile-avatar-image" src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80" alt="Foto de perfil" loading="lazy">
+                    <div class="brand compact">
+                        <div class="logo" aria-hidden="true">F</div>
+                        <div>
+                            <p class="brand-name">FÍBARO</p>
+                            <p class="brand-tagline">Panel interno</p>
                         </div>
+                    </div>
+                </div>
+                <div class="dashboard-toolbar">
+                    <div id="god-view-switch" class="god-view-switch" role="tablist" aria-label="Vistas de administración" hidden>
+                        <button type="button" role="tab" data-view="agenda" aria-selected="true">Agenda</button>
+                        <button type="button" role="tab" data-view="departments" aria-selected="false">Departamentos</button>
+                        <button type="button" role="tab" data-view="users" aria-selected="false">Usuarios</button>
+                        <button type="button" role="tab" data-view="profile" aria-selected="false">Mis datos</button>
+                    </div>
+                    <button id="logout-button" type="button" class="secondary-button">Cerrar sesión</button>
+                </div>
+            </header>
+
+            <section id="profile-panel" class="profile-panel god-panel" hidden aria-labelledby="profile-panel-title">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <img id="profile-avatar-image" src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=96&q=80" alt="Foto de perfil" loading="lazy">
+                    </div>
                     <div class="profile-summary">
                         <h2 id="profile-panel-title">Mis datos personales</h2>
                         <p id="profile-role" class="profile-role"></p>
@@ -166,165 +120,149 @@
                 </div>
             </section>
 
-                <section id="god-dashboard" class="god-dashboard" hidden>
-                    <section id="god-agenda-view" class="god-panel god-agenda" hidden aria-live="polite">
-                        <header class="panel-header">
-                            <h2>Agenda inteligente</h2>
-                            <p>Divide tu tiempo entre prioridades personales y tareas del equipo.</p>
-                        </header>
-                        <div class="agenda-grid">
-                            <article class="agenda-card">
-                                <header>
-                                    <h3>Mi agenda</h3>
-                                    <p>Organiza tus tareas y recordatorios personales del día.</p>
-                                </header>
-                                <form id="personal-agenda-form" class="agenda-form" novalidate>
-                                    <label class="form-field" for="personal-agenda-title">
-                                        <span>Título</span>
-                                        <input id="personal-agenda-title" name="title" type="text" required placeholder="Reunión de seguimiento">
+            <section id="god-dashboard" class="god-dashboard" hidden>
+                <section id="god-agenda-view" class="god-panel god-agenda" hidden aria-live="polite">
+                    <div class="agenda-grid">
+                        <article class="agenda-card">
+                            <header>
+                                <h2>Mi agenda</h2>
+                                <p>Organiza tus tareas y recordatorios personales del día.</p>
+                            </header>
+                            <form id="personal-agenda-form" class="agenda-form" novalidate>
+                                <label class="form-field" for="personal-agenda-title">
+                                    <span>Título</span>
+                                    <input id="personal-agenda-title" name="title" type="text" required placeholder="Reunión de seguimiento">
+                                </label>
+                                <label class="form-field" for="personal-agenda-description">
+                                    <span>Descripción</span>
+                                    <textarea id="personal-agenda-description" name="description" rows="3" placeholder="Anota detalles o puntos clave"></textarea>
+                                </label>
+                                <div class="agenda-form-grid">
+                                    <label class="form-field" for="personal-agenda-date">
+                                        <span>Fecha</span>
+                                        <input id="personal-agenda-date" name="date" type="date" required>
                                     </label>
-                                    <label class="form-field" for="personal-agenda-description">
-                                        <span>Descripción</span>
-                                        <textarea id="personal-agenda-description" name="description" rows="3" placeholder="Anota detalles o puntos clave"></textarea>
+                                    <label class="form-field" for="personal-agenda-time">
+                                        <span>Hora</span>
+                                        <input id="personal-agenda-time" name="time" type="time">
                                     </label>
-                                    <div class="agenda-form-grid">
-                                        <label class="form-field" for="personal-agenda-date">
-                                            <span>Fecha</span>
-                                            <input id="personal-agenda-date" name="date" type="date" required>
-                                        </label>
-                                        <label class="form-field" for="personal-agenda-time">
-                                            <span>Hora</span>
-                                            <input id="personal-agenda-time" name="time" type="time">
-                                        </label>
-                                        <label class="form-field" for="personal-agenda-duration">
-                                            <span>Duración</span>
-                                            <input id="personal-agenda-duration" name="duration" type="text" placeholder="ej. 1h 30m">
-                                        </label>
-                                    </div>
-                                    <button type="submit" class="primary-button">Añadir a mi agenda</button>
-                                    <p id="personal-agenda-feedback" class="feedback" role="status" aria-live="polite"></p>
-                                </form>
-                                <p id="personal-agenda-empty" class="agenda-empty">Aún no tienes recordatorios. Empieza creando uno.</p>
-                                <ul id="personal-agenda-list" class="agenda-list" hidden></ul>
-                            </article>
-
-                            <article class="agenda-card">
-                                <header>
-                                    <h3>Agenda del equipo</h3>
-                                    <p>Comparte recordatorios con uno, varios o todos los usuarios.</p>
-                                </header>
-                                <form id="team-agenda-form" class="agenda-form" novalidate>
-                                    <label class="form-field" for="team-agenda-title">
-                                        <span>Título</span>
-                                        <input id="team-agenda-title" name="title" type="text" required placeholder="Agendar revisión de proyecto">
+                                    <label class="form-field" for="personal-agenda-duration">
+                                        <span>Duración</span>
+                                        <input id="personal-agenda-duration" name="duration" type="text" placeholder="ej. 1h 30m">
                                     </label>
-                                    <label class="form-field" for="team-agenda-description">
-                                        <span>Descripción</span>
-                                        <textarea id="team-agenda-description" name="description" rows="3" placeholder="Incluye los puntos del encuentro"></textarea>
+                                </div>
+                                <button type="submit" class="primary-button">Añadir a mi agenda</button>
+                                <p id="personal-agenda-feedback" class="feedback" role="status" aria-live="polite"></p>
+                            </form>
+                            <p id="personal-agenda-empty" class="agenda-empty">Aún no tienes recordatorios. Empieza creando uno.</p>
+                            <ul id="personal-agenda-list" class="agenda-list" hidden></ul>
+                        </article>
+
+                        <article class="agenda-card">
+                            <header>
+                                <h2>Agenda del equipo</h2>
+                                <p>Comparte recordatorios con uno, varios o todos los usuarios.</p>
+                            </header>
+                            <form id="team-agenda-form" class="agenda-form" novalidate>
+                                <label class="form-field" for="team-agenda-title">
+                                    <span>Título</span>
+                                    <input id="team-agenda-title" name="title" type="text" required placeholder="Agendar revisión de proyecto">
+                                </label>
+                                <label class="form-field" for="team-agenda-description">
+                                    <span>Descripción</span>
+                                    <textarea id="team-agenda-description" name="description" rows="3" placeholder="Incluye los puntos del encuentro"></textarea>
+                                </label>
+                                <div class="agenda-form-grid">
+                                    <label class="form-field" for="team-agenda-date">
+                                        <span>Fecha</span>
+                                        <input id="team-agenda-date" name="date" type="date" required>
                                     </label>
-                                    <div class="agenda-form-grid">
-                                        <label class="form-field" for="team-agenda-date">
-                                            <span>Fecha</span>
-                                            <input id="team-agenda-date" name="date" type="date" required>
-                                        </label>
-                                        <label class="form-field" for="team-agenda-time">
-                                            <span>Hora</span>
-                                            <input id="team-agenda-time" name="time" type="time">
-                                        </label>
-                                        <label class="form-field" for="team-agenda-duration">
-                                            <span>Duración</span>
-                                            <input id="team-agenda-duration" name="duration" type="text" placeholder="ej. 45 minutos">
-                                        </label>
-                                    </div>
-                                    <fieldset class="agenda-recipient-fieldset">
-                                        <legend>Asignar a</legend>
-                                        <div id="team-agenda-user-list" class="agenda-recipient-list" role="group" aria-label="Usuarios disponibles"></div>
-                                    </fieldset>
-                                    <button type="submit" class="primary-button">Crear anotación para el equipo</button>
-                                    <p id="team-agenda-feedback" class="feedback" role="status" aria-live="polite"></p>
-                                </form>
-                                <p id="team-agenda-empty" class="agenda-empty">Aún no hay anotaciones compartidas.</p>
-                                <ul id="team-agenda-list" class="agenda-list" hidden></ul>
-                            </article>
-                        </div>
-                    </section>
-
-                    <section id="god-department-view" class="god-panel" aria-labelledby="department-tabs">
-                        <header class="panel-header">
-                            <h2>Departamentos y operaciones</h2>
-                            <p>Consulta indicadores clave y notas por cada área.</p>
-                        </header>
-                        <div class="department-layout">
-                            <nav id="department-tabs" class="department-tabs" aria-label="Departamentos"></nav>
-                            <section id="department-panel" class="department-panel" aria-live="polite"></section>
-                        </div>
-                    </section>
-
-                    <section id="user-management-panel" class="god-panel user-management" hidden aria-live="polite">
-                        <header class="panel-header panel-header--with-actions">
-                            <div>
-                                <h2>Gestión de usuarios</h2>
-                                <p>Revisa los perfiles existentes, crea nuevas cuentas y otorga permisos avanzados cuando lo necesites.</p>
-                            </div>
-                            <button id="toggle-create-user" type="button" class="primary-button">Nuevo usuario</button>
-                        </header>
-
-                        <form id="create-user-form" class="user-form" hidden novalidate>
-                            <div class="user-form-grid">
-                                <label class="form-field" for="user-username-input">
-                                    <span>Usuario</span>
-                                    <input id="user-username-input" name="username" type="text" autocomplete="off" required placeholder="ej. jmartinez">
-                                </label>
-                                <label class="form-field" for="user-name-input">
-                                    <span>Nombre completo</span>
-                                    <input id="user-name-input" name="name" type="text" autocomplete="name" required placeholder="Juan Martínez">
-                                </label>
-                                <label class="form-field" for="user-email-input">
-                                    <span>Correo electrónico</span>
-                                    <input id="user-email-input" name="email" type="email" autocomplete="email" placeholder="usuario@fibaro.com">
-                                </label>
-                                <label class="form-field" for="user-role-select">
-                                    <span>Rol</span>
-                                    <select id="user-role-select" name="role" required>
-                                        <option value="dios">Modo Dios</option>
-                                        <option value="delegado" selected>Delegado</option>
-                                        <option value="empleado">Empleado</option>
-                                    </select>
-                                </label>
-                                <label class="form-field" for="user-password-input">
-                                    <span>Contraseña</span>
-                                    <input id="user-password-input" name="password" type="password" autocomplete="new-password" minlength="4" required>
-                                </label>
-                            </div>
-                            <p id="user-management-feedback" class="feedback" role="status" aria-live="polite"></p>
-                            <div class="user-form-actions">
-                                <button id="cancel-create-user" type="button" class="ghost-button">Cancelar</button>
-                                <button type="submit" class="primary-button">Crear usuario</button>
-                            </div>
-                        </form>
-
-                        <div id="user-list" class="user-list" role="list"></div>
-                    </section>
+                                    <label class="form-field" for="team-agenda-time">
+                                        <span>Hora</span>
+                                        <input id="team-agenda-time" name="time" type="time">
+                                    </label>
+                                    <label class="form-field" for="team-agenda-duration">
+                                        <span>Duración</span>
+                                        <input id="team-agenda-duration" name="duration" type="text" placeholder="ej. 45 minutos">
+                                    </label>
+                                </div>
+                                <fieldset class="agenda-recipient-fieldset">
+                                    <legend>Asignar a</legend>
+                                    <div id="team-agenda-user-list" class="agenda-recipient-list" role="group" aria-label="Usuarios disponibles"></div>
+                                </fieldset>
+                                <button type="submit" class="primary-button">Crear anotación para el equipo</button>
+                                <p id="team-agenda-feedback" class="feedback" role="status" aria-live="polite"></p>
+                            </form>
+                            <p id="team-agenda-empty" class="agenda-empty">Aún no hay anotaciones compartidas.</p>
+                            <ul id="team-agenda-list" class="agenda-list" hidden></ul>
+                        </article>
+                    </div>
                 </section>
 
-                <section id="standard-dashboard" class="standard-dashboard" hidden>
-                    <header class="panel-header">
-                        <h2 id="role-title" class="role-title"></h2>
-                        <p id="role-description" class="role-description"></p>
+                <section id="god-department-view" class="god-panel" aria-labelledby="department-tabs">
+                    <nav id="department-tabs" class="department-tabs" aria-label="Departamentos"></nav>
+                    <section id="department-panel" class="department-panel" aria-live="polite"></section>
+                </section>
+
+                <section id="user-management-panel" class="god-panel user-management" hidden aria-live="polite">
+                    <header class="user-management-header">
+                        <div>
+                            <h2>Gestión de usuarios</h2>
+                            <p>Revisa los perfiles existentes, crea nuevas cuentas y otorga permisos avanzados cuando lo necesites.</p>
+                        </div>
+                        <button id="toggle-create-user" type="button" class="primary-button">Nuevo usuario</button>
                     </header>
-                    <section class="standard-modules">
-                        <article class="standard-card">
-                            <h3>Secciones destacadas</h3>
-                            <ul id="role-menu" class="role-menu"></ul>
-                        </article>
-                        <article id="user-agenda-section" class="standard-card user-agenda" hidden aria-live="polite">
-                            <h3>Mis anotaciones asignadas</h3>
-                            <p id="user-agenda-empty" class="agenda-empty">No tienes anotaciones asignadas.</p>
-                            <ul id="user-agenda-list" class="agenda-list" hidden></ul>
-                        </article>
-                    </section>
+
+                    <form id="create-user-form" class="user-form" hidden novalidate>
+                        <div class="user-form-grid">
+                            <label class="form-field" for="user-username-input">
+                                <span>Usuario</span>
+                                <input id="user-username-input" name="username" type="text" autocomplete="off" required placeholder="ej. jmartinez">
+                            </label>
+                            <label class="form-field" for="user-name-input">
+                                <span>Nombre completo</span>
+                                <input id="user-name-input" name="name" type="text" autocomplete="name" required placeholder="Juan Martínez">
+                            </label>
+                            <label class="form-field" for="user-email-input">
+                                <span>Correo electrónico</span>
+                                <input id="user-email-input" name="email" type="email" autocomplete="email" placeholder="usuario@fibaro.com">
+                            </label>
+                            <label class="form-field" for="user-role-select">
+                                <span>Rol</span>
+                                <select id="user-role-select" name="role" required>
+                                    <option value="dios">Modo Dios</option>
+                                    <option value="delegado" selected>Delegado</option>
+                                    <option value="empleado">Empleado</option>
+                                </select>
+                            </label>
+                            <label class="form-field" for="user-password-input">
+                                <span>Contraseña</span>
+                                <input id="user-password-input" name="password" type="password" autocomplete="new-password" minlength="4" required>
+                            </label>
+                        </div>
+                        <p id="user-management-feedback" class="feedback" role="status" aria-live="polite"></p>
+                        <div class="user-form-actions">
+                            <button id="cancel-create-user" type="button" class="ghost-button">Cancelar</button>
+                            <button type="submit" class="primary-button">Crear usuario</button>
+                        </div>
+                    </form>
+
+                    <div id="user-list" class="user-list" role="list"></div>
                 </section>
-            </div>
+            </section>
+
+            <section id="standard-dashboard" class="standard-dashboard" hidden>
+                <h1 id="role-title" class="role-title"></h1>
+                <p id="role-description" class="role-description"></p>
+                <nav aria-label="Menú principal">
+                    <ul id="role-menu" class="role-menu"></ul>
+                </nav>
+                <section id="user-agenda-section" class="user-agenda" hidden aria-live="polite">
+                    <h2>Mis anotaciones asignadas</h2>
+                    <p id="user-agenda-empty" class="agenda-empty">No tienes anotaciones asignadas.</p>
+                    <ul id="user-agenda-list" class="agenda-list" hidden></ul>
+                </section>
+            </section>
         </section>
     </main>
 
