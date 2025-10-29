@@ -43,29 +43,14 @@ const toggleCreateUserButton = document.getElementById('toggle-create-user');
 const createUserForm = document.getElementById('create-user-form');
 const cancelCreateUserButton = document.getElementById('cancel-create-user');
 const userManagementFeedback = document.getElementById('user-management-feedback');
-const godAgendaView = document.getElementById('god-agenda-view');
-const personalAgendaForm = document.getElementById('personal-agenda-form');
-const personalAgendaList = document.getElementById('personal-agenda-list');
-const personalAgendaFeedback = document.getElementById('personal-agenda-feedback');
-const personalAgendaEmpty = document.getElementById('personal-agenda-empty');
-const teamAgendaForm = document.getElementById('team-agenda-form');
-const teamAgendaList = document.getElementById('team-agenda-list');
-const teamAgendaFeedback = document.getElementById('team-agenda-feedback');
-const teamAgendaEmpty = document.getElementById('team-agenda-empty');
-const teamAgendaUserList = document.getElementById('team-agenda-user-list');
-const userAgendaSection = document.getElementById('user-agenda-section');
-const userAgendaList = document.getElementById('user-agenda-list');
-const userAgendaEmpty = document.getElementById('user-agenda-empty');
 
 const defaultAvatar =
     'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=256&q=80';
 
 const CREDENTIAL_OVERRIDES_KEY = 'fibaroCredentialOverrides';
-const AGENDA_STORAGE_KEY = 'fibaroAgenda';
 
 let activeUser = null;
-let activeGodView = 'agenda';
-let agendaDataCache = null;
+let activeGodView = 'departments';
 
 const escapeHtml = (value) => {
     if (value === undefined || value === null) {
@@ -187,784 +172,15 @@ const persistCurrentUserOverride = (updates) => {
     persistCredentialOverride(activeUser.username, updates);
 };
 
-const createEmptyAgenda = () => ({
-    personal: {},
-    team: []
-});
-
-const cloneAgendaEntry = (entry = {}) => ({
-    ...entry,
-    assignedTo: Array.isArray(entry.assignedTo) ? [...entry.assignedTo] : undefined
-});
-
-const cloneAgendaData = (data = {}) => ({
-    personal: Object.entries(data.personal ?? {}).reduce((accumulator, [username, entries]) => {
-        accumulator[username] = Array.isArray(entries) ? entries.map((item) => cloneAgendaEntry(item)) : [];
-        return accumulator;
-    }, {}),
-    team: Array.isArray(data.team) ? data.team.map((item) => cloneAgendaEntry(item)) : []
-});
-
-const readAgendaData = () => {
-    if (typeof localStorage === 'undefined') {
-        return createEmptyAgenda();
-    }
-
-    try {
-        const stored = localStorage.getItem(AGENDA_STORAGE_KEY);
-        if (!stored) {
-            return createEmptyAgenda();
-        }
-
-        const parsed = JSON.parse(stored);
-        return {
-            personal: typeof parsed.personal === 'object' && parsed.personal ? parsed.personal : {},
-            team: Array.isArray(parsed.team) ? parsed.team : []
-        };
-    } catch (error) {
-        return createEmptyAgenda();
-    }
-};
-
-const writeAgendaData = (data) => {
-    agendaDataCache = data;
-
-    if (typeof localStorage === 'undefined') {
-        return;
-    }
-
-    try {
-        localStorage.setItem(AGENDA_STORAGE_KEY, JSON.stringify(data));
-    } catch (error) {
-        /* ignore persistence errors */
-    }
-};
-
-const getAgendaData = () => {
-    if (!agendaDataCache) {
-        agendaDataCache = readAgendaData();
-    }
-
-    return agendaDataCache;
-};
-
-const updateAgendaData = (mutator) => {
-    const current = cloneAgendaData(getAgendaData());
-    const updated = typeof mutator === 'function' ? mutator(current) ?? current : current;
-    writeAgendaData(updated);
-    return updated;
-};
-
-const getPersonalAgendaEntries = (username) => {
-    if (!username) {
-        return [];
-    }
-
-    const agenda = getAgendaData();
-    const entries = agenda.personal?.[username];
-    return Array.isArray(entries) ? entries : [];
-};
-
-const setPersonalAgendaEntries = (username, entries) => {
-    if (!username) {
-        return;
-    }
-
-    updateAgendaData((data) => {
-        data.personal[username] = Array.isArray(entries) ? entries : [];
-        return data;
-    });
-};
-
-const getTeamAgendaEntries = () => {
-    const agenda = getAgendaData();
-    return Array.isArray(agenda.team) ? agenda.team : [];
-};
-
-const setTeamAgendaEntries = (entries) => {
-    updateAgendaData((data) => {
-        data.team = Array.isArray(entries) ? entries : [];
-        return data;
-    });
-};
-
-const generateAgendaId = () => `ag-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
-
-const setFeedbackState = (element, message, isError = false) => {
-    if (!element) {
-        return;
-    }
-
-    const hasMessage = Boolean(message);
-    element.textContent = message ?? '';
-    if (!hasMessage) {
-        element.classList.remove('error', 'success');
-        return;
-    }
-
-    element.classList.toggle('error', Boolean(isError));
-    element.classList.toggle('success', !isError);
-};
-
 const showUserManagementFeedback = (message, isError = false) => {
-    setFeedbackState(userManagementFeedback, message, isError);
-};
-
-const parseAgendaTimestamp = (entry) => {
-    if (!entry?.date) {
-        return { timestamp: Number.MAX_SAFE_INTEGER, hasDate: false };
-    }
-
-    const timeValue = typeof entry.time === 'string' && entry.time ? entry.time : '00:00';
-    const candidate = new Date(`${entry.date}T${timeValue}`);
-    const timestamp = candidate.getTime();
-
-    if (!Number.isFinite(timestamp)) {
-        return { timestamp: Number.MAX_SAFE_INTEGER, hasDate: false };
-    }
-
-    return { timestamp, hasDate: true };
-};
-
-const sortAgendaEntries = (entries) =>
-    entries
-        .slice()
-        .sort((a, b) => {
-            const completionDifference = Number(Boolean(a?.completed)) - Number(Boolean(b?.completed));
-            if (completionDifference !== 0) {
-                return completionDifference;
-            }
-
-            const aInfo = parseAgendaTimestamp(a);
-            const bInfo = parseAgendaTimestamp(b);
-
-            if (aInfo.timestamp !== bInfo.timestamp) {
-                return aInfo.timestamp - bInfo.timestamp;
-            }
-
-            const aTitle = a?.title ?? '';
-            const bTitle = b?.title ?? '';
-            return aTitle.localeCompare(bTitle, 'es', { sensitivity: 'base' });
-        });
-
-const formatAgendaDateTimeLabel = (entry) => {
-    if (!entry?.date) {
-        return '';
-    }
-
-    try {
-        const timeValue = typeof entry.time === 'string' && entry.time ? entry.time : '00:00';
-        const isoCandidate = `${entry.date}T${timeValue}`;
-        const dateObject = new Date(isoCandidate);
-
-        if (Number.isNaN(dateObject.getTime())) {
-            return '';
-        }
-
-        const options = entry.time ? { dateStyle: 'long', timeStyle: 'short' } : { dateStyle: 'long' };
-        return new Intl.DateTimeFormat('es-ES', options).format(dateObject);
-    } catch (error) {
-        return '';
-    }
-};
-
-const buildAgendaDatetimeMarkup = (entry) => {
-    const formatted = formatAgendaDateTimeLabel(entry);
-
-    if (!formatted) {
-        return '<span class="agenda-badge">Fecha por definir</span>';
-    }
-
-    const datetimeAttr = entry.date ? `${entry.date}${entry.time ? `T${entry.time}` : ''}` : '';
-    return `<time datetime="${escapeAttribute(datetimeAttr)}">${escapeHtml(formatted)}</time>`;
-};
-
-const describeAgendaDuration = (entry) => {
-    const duration = entry?.duration?.trim();
-    return duration ? `Duración: ${duration}` : '';
-};
-
-const getKnownUsersMap = () => {
-    const directory = new Map();
-    getAllManagedUsers().forEach((user) => {
-        if (user?.username) {
-            directory.set(user.username, user);
-        }
-    });
-    return directory;
-};
-
-const describeAgendaRecipients = (entry, directory) => {
-    if (!entry) {
-        return '';
-    }
-
-    if (entry.assignAll) {
-        return 'Asignado a: Todos los usuarios';
-    }
-
-    const recipients = Array.isArray(entry.assignedTo) ? entry.assignedTo : [];
-
-    if (!recipients.length) {
-        return '';
-    }
-
-    const labels = recipients.map((username) => {
-        const user = directory.get(username);
-        return user?.name ? user.name : `@${username}`;
-    });
-
-    return `Asignado a: ${labels.join(', ')}`;
-};
-
-const describeAgendaRecipientsForUser = (entry, directory, currentUsername) => {
-    if (!entry) {
-        return '';
-    }
-
-    if (entry.assignAll) {
-        return 'También visible para todo el equipo';
-    }
-
-    const recipients = Array.isArray(entry.assignedTo)
-        ? entry.assignedTo.filter((username) => username !== currentUsername)
-        : [];
-
-    if (!recipients.length) {
-        return '';
-    }
-
-    const labels = recipients.map((username) => {
-        const user = directory.get(username);
-        return user?.name ? user.name : `@${username}`;
-    });
-
-    return `Compartido con: ${labels.join(', ')}`;
-};
-
-const describeAgendaCreator = (entry, directory) => {
-    if (!entry?.createdBy) {
-        return '';
-    }
-
-    const creator = directory.get(entry.createdBy);
-    const label = creator?.name || `@${entry.createdBy}`;
-    return `Asignado por: ${label}`;
-};
-
-const renderPersonalAgenda = () => {
-    if (!personalAgendaList || !activeUser?.username) {
+    if (!userManagementFeedback) {
         return;
     }
 
-    const entries = sortAgendaEntries(getPersonalAgendaEntries(activeUser.username));
-    const hasEntries = entries.length > 0;
-
-    if (personalAgendaEmpty) {
-        personalAgendaEmpty.hidden = hasEntries;
-    }
-
-    personalAgendaList.hidden = !hasEntries;
-
-    if (!hasEntries) {
-        personalAgendaList.innerHTML = '';
-        return;
-    }
-
-    personalAgendaList.innerHTML = entries
-        .map((entry) => {
-            const durationLabel = describeAgendaDuration(entry);
-            const metaParts = [];
-            if (durationLabel) {
-                metaParts.push(`<span class="agenda-badge">${escapeHtml(durationLabel)}</span>`);
-            }
-
-            const metaMarkup = metaParts.length ? `<div class="agenda-meta">${metaParts.join('')}</div>` : '';
-
-            return `
-                <li class="agenda-item${entry.completed ? ' is-completed' : ''}" data-id="${escapeAttribute(entry.id)}">
-                    <header>
-                        <h3>${escapeHtml(entry.title ?? '')}</h3>
-                        ${buildAgendaDatetimeMarkup(entry)}
-                    </header>
-                    ${entry.description ? `<p>${escapeHtml(entry.description)}</p>` : ''}
-                    ${metaMarkup}
-                    <div class="agenda-actions">
-                        <button type="button" class="secondary-button" data-action="toggle">${entry.completed ? 'Marcar pendiente' : 'Marcar completada'}</button>
-                        <button type="button" class="danger-button" data-action="delete">Eliminar</button>
-                    </div>
-                </li>
-            `;
-        })
-        .join('');
-};
-
-const renderTeamAgenda = () => {
-    if (!teamAgendaList) {
-        return;
-    }
-
-    const entries = sortAgendaEntries(getTeamAgendaEntries());
-    const hasEntries = entries.length > 0;
-
-    if (teamAgendaEmpty) {
-        teamAgendaEmpty.hidden = hasEntries;
-    }
-
-    teamAgendaList.hidden = !hasEntries;
-
-    if (!hasEntries) {
-        teamAgendaList.innerHTML = '';
-        return;
-    }
-
-    const directory = getKnownUsersMap();
-
-    teamAgendaList.innerHTML = entries
-        .map((entry) => {
-            const durationLabel = describeAgendaDuration(entry);
-            const recipientsLabel = describeAgendaRecipients(entry, directory);
-            const metaParts = [];
-
-            if (durationLabel) {
-                metaParts.push(`<span class="agenda-badge">${escapeHtml(durationLabel)}</span>`);
-            }
-
-            if (recipientsLabel) {
-                metaParts.push(`<span class="agenda-badge">${escapeHtml(recipientsLabel)}</span>`);
-            }
-
-            const metaMarkup = metaParts.length ? `<div class="agenda-meta">${metaParts.join('')}</div>` : '';
-
-            return `
-                <li class="agenda-item${entry.completed ? ' is-completed' : ''}" data-id="${escapeAttribute(entry.id)}">
-                    <header>
-                        <h3>${escapeHtml(entry.title ?? '')}</h3>
-                        ${buildAgendaDatetimeMarkup(entry)}
-                    </header>
-                    ${entry.description ? `<p>${escapeHtml(entry.description)}</p>` : ''}
-                    ${metaMarkup}
-                    <div class="agenda-actions">
-                        <button type="button" class="secondary-button" data-action="toggle">${entry.completed ? 'Marcar pendiente' : 'Marcar completada'}</button>
-                        <button type="button" class="danger-button" data-action="delete">Eliminar</button>
-                    </div>
-                </li>
-            `;
-        })
-        .join('');
-};
-
-const renderUserAgenda = () => {
-    if (!userAgendaSection || !userAgendaList || !activeUser) {
-        return;
-    }
-
-    if (activeUser.role === 'dios') {
-        userAgendaSection.setAttribute('hidden', 'hidden');
-        return;
-    }
-
-    const directory = getKnownUsersMap();
-    const relevantEntries = getTeamAgendaEntries().filter((entry) =>
-        entry?.assignAll || (Array.isArray(entry?.assignedTo) && entry.assignedTo.includes(activeUser.username))
-    );
-
-    const entries = sortAgendaEntries(relevantEntries);
-    const hasEntries = entries.length > 0;
-
-    userAgendaSection.removeAttribute('hidden');
-
-    if (userAgendaEmpty) {
-        userAgendaEmpty.hidden = hasEntries;
-    }
-
-    userAgendaList.hidden = !hasEntries;
-
-    if (!hasEntries) {
-        userAgendaList.innerHTML = '';
-        return;
-    }
-
-    userAgendaList.innerHTML = entries
-        .map((entry) => {
-            const durationLabel = describeAgendaDuration(entry);
-            const creatorLabel = describeAgendaCreator(entry, directory);
-            const recipientsLabel = describeAgendaRecipientsForUser(entry, directory, activeUser.username);
-            const metaParts = [];
-
-            if (creatorLabel) {
-                metaParts.push(`<span class="agenda-badge">${escapeHtml(creatorLabel)}</span>`);
-            }
-
-            if (durationLabel) {
-                metaParts.push(`<span class="agenda-badge">${escapeHtml(durationLabel)}</span>`);
-            }
-
-            if (recipientsLabel) {
-                metaParts.push(`<span class="agenda-badge">${escapeHtml(recipientsLabel)}</span>`);
-            }
-
-            const metaMarkup = metaParts.length ? `<div class="agenda-meta">${metaParts.join('')}</div>` : '';
-
-            return `
-                <li class="agenda-item${entry.completed ? ' is-completed' : ''}" data-id="${escapeAttribute(entry.id)}">
-                    <header>
-                        <h3>${escapeHtml(entry.title ?? '')}</h3>
-                        ${buildAgendaDatetimeMarkup(entry)}
-                    </header>
-                    ${entry.description ? `<p>${escapeHtml(entry.description)}</p>` : ''}
-                    ${metaMarkup}
-                </li>
-            `;
-        })
-        .join('');
-};
-
-const syncTeamRecipientsState = () => {
-    if (!teamAgendaUserList) {
-        return;
-    }
-
-    const allCheckbox = teamAgendaUserList.querySelector('input[type="checkbox"][value="__all__"]');
-    const otherCheckboxes = teamAgendaUserList.querySelectorAll('input[type="checkbox"][value]:not([value="__all__"])');
-
-    if (allCheckbox?.checked) {
-        otherCheckboxes.forEach((checkbox) => {
-            checkbox.checked = false;
-            checkbox.disabled = true;
-        });
-    } else {
-        otherCheckboxes.forEach((checkbox) => {
-            checkbox.disabled = false;
-        });
-    }
-};
-
-const renderTeamUserChecklist = () => {
-    if (!teamAgendaUserList) {
-        return;
-    }
-
-    const previousSelection = new Set(
-        Array.from(teamAgendaUserList.querySelectorAll('input[type="checkbox"]:checked')).map((input) => input.value)
-    );
-
-    const users = getAllManagedUsers();
-
-    if (!users.length) {
-        teamAgendaUserList.innerHTML = '<p class="agenda-hint">Todavía no hay usuarios disponibles.</p>';
-        return;
-    }
-
-    const sortedUsers = users
-        .slice()
-        .sort((a, b) => {
-            const aLabel = a.name || a.username;
-            const bLabel = b.name || b.username;
-            return aLabel.localeCompare(bLabel, 'es', { sensitivity: 'base' });
-        });
-
-    const allChecked = previousSelection.has('__all__');
-
-    const itemsHtml = sortedUsers
-        .map((user) => {
-            const value = escapeAttribute(user.username);
-            const label = escapeHtml(user.name || `@${user.username}`);
-            const shouldCheck = !allChecked && previousSelection.has(user.username);
-            return `<label><input type="checkbox" value="${value}"${shouldCheck ? ' checked' : ''}>${label}</label>`;
-        })
-        .join('');
-
-    teamAgendaUserList.innerHTML = `
-        <label><input type="checkbox" value="__all__"${allChecked ? ' checked' : ''}>Todos los usuarios</label>
-        ${itemsHtml}
-    `;
-
-    syncTeamRecipientsState();
-};
-
-const collectTeamRecipientSelection = () => {
-    if (!teamAgendaUserList) {
-        return { assignAll: false, recipients: [] };
-    }
-
-    const checkedValues = Array.from(teamAgendaUserList.querySelectorAll('input[type="checkbox"]:checked')).map(
-        (input) => input.value
-    );
-
-    const assignAll = checkedValues.includes('__all__');
-    const recipients = assignAll ? [] : checkedValues.filter((value) => value !== '__all__');
-
-    return { assignAll, recipients };
-};
-
-const pruneTeamAgendaRecipients = () => {
-    const entries = getTeamAgendaEntries();
-    if (!entries.length) {
-        return;
-    }
-
-    const validUsers = new Set(getAllManagedUsers().map((user) => user.username));
-    let hasChanges = false;
-
-    const sanitizedEntries = entries.map((entry) => {
-        if (entry.assignAll) {
-            return entry;
-        }
-
-        const recipients = Array.isArray(entry.assignedTo) ? entry.assignedTo.filter((username) => validUsers.has(username)) : [];
-
-        if (recipients.length !== (Array.isArray(entry.assignedTo) ? entry.assignedTo.length : 0)) {
-            hasChanges = true;
-            return { ...entry, assignedTo: recipients };
-        }
-
-        return entry;
-    });
-
-    if (hasChanges) {
-        setTeamAgendaEntries(sanitizedEntries);
-        renderTeamAgenda();
-        renderUserAgenda();
-    }
-};
-
-const handlePersonalAgendaSubmit = (event) => {
-    event.preventDefault();
-
-    if (!personalAgendaForm || !activeUser?.username) {
-        return;
-    }
-
-    if (!personalAgendaForm.checkValidity()) {
-        personalAgendaForm.reportValidity();
-        return;
-    }
-
-    const formData = new FormData(personalAgendaForm);
-    const title = (formData.get('title') ?? '').toString().trim();
-    const description = (formData.get('description') ?? '').toString().trim();
-    const date = (formData.get('date') ?? '').toString();
-    const time = (formData.get('time') ?? '').toString();
-    const duration = (formData.get('duration') ?? '').toString().trim();
-
-    if (!title) {
-        setFeedbackState(personalAgendaFeedback, 'Indica un título para la anotación.', true);
-        personalAgendaForm.querySelector('[name="title"]')?.focus();
-        return;
-    }
-
-    if (!date) {
-        setFeedbackState(personalAgendaFeedback, 'Selecciona una fecha para la anotación.', true);
-        personalAgendaForm.querySelector('[name="date"]')?.focus();
-        return;
-    }
-
-    const newEntry = {
-        id: generateAgendaId(),
-        title,
-        description,
-        date,
-        time,
-        duration,
-        completed: false,
-        createdAt: new Date().toISOString(),
-        createdBy: activeUser.username
-    };
-
-    const updatedEntries = [...getPersonalAgendaEntries(activeUser.username), newEntry];
-    setPersonalAgendaEntries(activeUser.username, updatedEntries);
-    setFeedbackState(personalAgendaFeedback, 'Anotación guardada en tu agenda.', false);
-    personalAgendaForm.reset();
-    renderPersonalAgenda();
-};
-
-const togglePersonalAgendaEntry = (entryId) => {
-    if (!activeUser?.username || !entryId) {
-        return;
-    }
-
-    const updatedEntries = getPersonalAgendaEntries(activeUser.username).map((entry) =>
-        entry.id === entryId ? { ...entry, completed: !entry.completed } : entry
-    );
-
-    setPersonalAgendaEntries(activeUser.username, updatedEntries);
-    renderPersonalAgenda();
-    setFeedbackState(personalAgendaFeedback, 'Estado actualizado.', false);
-};
-
-const deletePersonalAgendaEntry = (entryId) => {
-    if (!activeUser?.username || !entryId) {
-        return;
-    }
-
-    const filteredEntries = getPersonalAgendaEntries(activeUser.username).filter((entry) => entry.id !== entryId);
-    setPersonalAgendaEntries(activeUser.username, filteredEntries);
-    renderPersonalAgenda();
-    setFeedbackState(personalAgendaFeedback, 'Anotación eliminada.', false);
-};
-
-const handlePersonalAgendaListClick = (event) => {
-    const target = event.target;
-
-    if (!(target instanceof HTMLElement) || !target.dataset.action) {
-        return;
-    }
-
-    const item = target.closest('.agenda-item');
-    const entryId = item?.dataset.id;
-
-    if (!entryId) {
-        return;
-    }
-
-    if (target.dataset.action === 'toggle') {
-        togglePersonalAgendaEntry(entryId);
-        return;
-    }
-
-    if (target.dataset.action === 'delete') {
-        if (!window.confirm('¿Deseas eliminar esta anotación?')) {
-            return;
-        }
-
-        deletePersonalAgendaEntry(entryId);
-    }
-};
-
-const handleTeamAgendaSubmit = (event) => {
-    event.preventDefault();
-
-    if (!teamAgendaForm || !activeUser?.username) {
-        return;
-    }
-
-    if (!teamAgendaForm.checkValidity()) {
-        teamAgendaForm.reportValidity();
-        return;
-    }
-
-    const formData = new FormData(teamAgendaForm);
-    const title = (formData.get('title') ?? '').toString().trim();
-    const description = (formData.get('description') ?? '').toString().trim();
-    const date = (formData.get('date') ?? '').toString();
-    const time = (formData.get('time') ?? '').toString();
-    const duration = (formData.get('duration') ?? '').toString().trim();
-    const { assignAll, recipients } = collectTeamRecipientSelection();
-
-    if (!title) {
-        setFeedbackState(teamAgendaFeedback, 'Indica un título para la anotación.', true);
-        teamAgendaForm.querySelector('[name="title"]')?.focus();
-        return;
-    }
-
-    if (!date) {
-        setFeedbackState(teamAgendaFeedback, 'Selecciona una fecha para la anotación.', true);
-        teamAgendaForm.querySelector('[name="date"]')?.focus();
-        return;
-    }
-
-    if (!assignAll && recipients.length === 0) {
-        setFeedbackState(teamAgendaFeedback, 'Selecciona al menos un usuario o elige "Todos".', true);
-        return;
-    }
-
-    const newEntry = {
-        id: generateAgendaId(),
-        title,
-        description,
-        date,
-        time,
-        duration,
-        completed: false,
-        assignedTo: recipients,
-        assignAll,
-        createdAt: new Date().toISOString(),
-        createdBy: activeUser.username
-    };
-
-    const updatedEntries = [...getTeamAgendaEntries(), newEntry];
-    setTeamAgendaEntries(updatedEntries);
-    setFeedbackState(teamAgendaFeedback, 'Anotación compartida con el equipo.', false);
-    teamAgendaForm.reset();
-    renderTeamAgenda();
-    renderUserAgenda();
-    renderTeamUserChecklist();
-};
-
-const toggleTeamAgendaEntry = (entryId) => {
-    if (!entryId) {
-        return;
-    }
-
-    const updatedEntries = getTeamAgendaEntries().map((entry) =>
-        entry.id === entryId ? { ...entry, completed: !entry.completed } : entry
-    );
-
-    setTeamAgendaEntries(updatedEntries);
-    renderTeamAgenda();
-    renderUserAgenda();
-    setFeedbackState(teamAgendaFeedback, 'Estado de la anotación actualizado.', false);
-};
-
-const deleteTeamAgendaEntry = (entryId) => {
-    if (!entryId) {
-        return;
-    }
-
-    const filteredEntries = getTeamAgendaEntries().filter((entry) => entry.id !== entryId);
-    setTeamAgendaEntries(filteredEntries);
-    renderTeamAgenda();
-    renderUserAgenda();
-    setFeedbackState(teamAgendaFeedback, 'Anotación eliminada del equipo.', false);
-};
-
-const handleTeamAgendaListClick = (event) => {
-    const target = event.target;
-
-    if (!(target instanceof HTMLElement) || !target.dataset.action) {
-        return;
-    }
-
-    const item = target.closest('.agenda-item');
-    const entryId = item?.dataset.id;
-
-    if (!entryId) {
-        return;
-    }
-
-    if (target.dataset.action === 'toggle') {
-        toggleTeamAgendaEntry(entryId);
-        return;
-    }
-
-    if (target.dataset.action === 'delete') {
-        if (!window.confirm('¿Deseas eliminar esta anotación del equipo?')) {
-            return;
-        }
-
-        deleteTeamAgendaEntry(entryId);
-    }
-};
-
-const handleTeamRecipientsChange = (event) => {
-    const target = event.target;
-
-    if (!(target instanceof HTMLInputElement) || target.type !== 'checkbox') {
-        return;
-    }
-
-    if (target.value === '__all__') {
-        syncTeamRecipientsState();
-        return;
-    }
-
-    const allCheckbox = teamAgendaUserList?.querySelector('input[type="checkbox"][value="__all__"]');
-    if (allCheckbox?.checked) {
-        allCheckbox.checked = false;
-    }
-
-    syncTeamRecipientsState();
+    userManagementFeedback.textContent = message ?? '';
+    const hasMessage = Boolean(message);
+    userManagementFeedback.classList.toggle('error', hasMessage && isError);
+    userManagementFeedback.classList.toggle('success', hasMessage && !isError);
 };
 
 const toggleCreateUserForm = (shouldShow) => {
@@ -994,7 +210,7 @@ const toggleCreateUserForm = (shouldShow) => {
     }
 };
 
-const godViews = new Set(['agenda', 'departments', 'users', 'profile']);
+const godViews = new Set(['departments', 'users', 'profile']);
 
 const setGodView = (viewKey) => {
     const normalizedView = godViews.has(viewKey) ? viewKey : 'departments';
@@ -1008,22 +224,7 @@ const setGodView = (viewKey) => {
         });
     }
 
-    if (normalizedView === 'agenda') {
-        godAgendaView?.removeAttribute('hidden');
-        godDepartmentView?.setAttribute('hidden', 'hidden');
-        userManagementPanel?.setAttribute('hidden', 'hidden');
-        profilePanel?.setAttribute('hidden', 'hidden');
-        setProfileEditMode(false);
-        renderPersonalAgenda();
-        renderTeamAgenda();
-        renderTeamUserChecklist();
-        setFeedbackState(personalAgendaFeedback, '');
-        setFeedbackState(teamAgendaFeedback, '');
-        return;
-    }
-
     if (normalizedView === 'departments') {
-        godAgendaView?.setAttribute('hidden', 'hidden');
         godDepartmentView?.removeAttribute('hidden');
         userManagementPanel?.setAttribute('hidden', 'hidden');
         toggleCreateUserForm(false);
@@ -1034,19 +235,14 @@ const setGodView = (viewKey) => {
     }
 
     if (normalizedView === 'users') {
-        godAgendaView?.setAttribute('hidden', 'hidden');
         godDepartmentView?.setAttribute('hidden', 'hidden');
         userManagementPanel?.removeAttribute('hidden');
         profilePanel?.setAttribute('hidden', 'hidden');
         setProfileEditMode(false);
-        toggleCreateUserForm(false);
-        showUserManagementFeedback('');
         renderUserList();
-        renderTeamUserChecklist();
         return;
     }
 
-    godAgendaView?.setAttribute('hidden', 'hidden');
     godDepartmentView?.setAttribute('hidden', 'hidden');
     userManagementPanel?.setAttribute('hidden', 'hidden');
     toggleCreateUserForm(false);
@@ -1158,9 +354,6 @@ const applyUserUpdates = (username, updates) => {
 
     renderUserList();
     showUserManagementFeedback('Cambios guardados correctamente.', false);
-    renderTeamUserChecklist();
-    renderTeamAgenda();
-    renderUserAgenda();
 };
 
 const createUserAccount = ({ username, name, email, role, password }) => {
@@ -1214,9 +407,6 @@ const createUserAccount = ({ username, name, email, role, password }) => {
         }
     }
     showUserManagementFeedback('Usuario creado correctamente.', false);
-    renderTeamUserChecklist();
-    renderTeamAgenda();
-    renderUserAgenda();
     return true;
 };
 
@@ -1239,8 +429,6 @@ const deleteUserAccount = (username) => {
 
     renderUserList();
     showUserManagementFeedback('Usuario eliminado correctamente.', false);
-    pruneTeamAgendaRecipients();
-    renderTeamUserChecklist();
 };
 
 const clearProfilePasswordFeedback = () => {
@@ -1457,8 +645,6 @@ const renderRoleDashboard = (roleKey) => {
     if (roleKey === 'dios') {
         standardDashboard?.setAttribute('hidden', 'hidden');
         godDashboard?.removeAttribute('hidden');
-        roleDashboard?.classList.add('god-active');
-        godViewSwitch?.removeAttribute('hidden');
         buildDepartmentTabs();
         setGodView(activeGodView);
         toggleCreateUserForm(false);
@@ -1471,9 +657,6 @@ const renderRoleDashboard = (roleKey) => {
     } else {
         godDashboard?.setAttribute('hidden', 'hidden');
         standardDashboard?.removeAttribute('hidden');
-        roleDashboard?.classList.remove('god-active');
-        godViewSwitch?.setAttribute('hidden', 'hidden');
-        godAgendaView?.setAttribute('hidden', 'hidden');
         if (roleTitle) roleTitle.textContent = roleInfo.title;
         if (roleDescription) roleDescription.textContent = roleInfo.description;
         if (roleMenu) roleMenu.innerHTML = roleInfo.menu.map((item) => `<li>${item}</li>`).join('');
@@ -1657,11 +840,6 @@ const initializeDashboard = () => {
     renderRoleDashboard(activeUser.role);
     populateProfile(activeUser);
     setProfileEditMode(false);
-    renderPersonalAgenda();
-    pruneTeamAgendaRecipients();
-    renderTeamAgenda();
-    renderTeamUserChecklist();
-    renderUserAgenda();
 
     if (logoutButton) {
         logoutButton.addEventListener('click', () => {
@@ -1971,26 +1149,6 @@ const initializeDashboard = () => {
                 deleteUserAccount(username);
             }
         });
-    }
-
-    if (personalAgendaForm) {
-        personalAgendaForm.addEventListener('submit', handlePersonalAgendaSubmit);
-    }
-
-    if (personalAgendaList) {
-        personalAgendaList.addEventListener('click', handlePersonalAgendaListClick);
-    }
-
-    if (teamAgendaForm) {
-        teamAgendaForm.addEventListener('submit', handleTeamAgendaSubmit);
-    }
-
-    if (teamAgendaList) {
-        teamAgendaList.addEventListener('click', handleTeamAgendaListClick);
-    }
-
-    if (teamAgendaUserList) {
-        teamAgendaUserList.addEventListener('change', handleTeamRecipientsChange);
     }
 
     if (departmentTabs) {
