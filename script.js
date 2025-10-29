@@ -9,7 +9,6 @@ const roleMenu = document.getElementById('role-menu');
 const logoutButton = document.getElementById('logout-button');
 const godDashboard = document.getElementById('god-dashboard');
 const standardDashboard = document.getElementById('standard-dashboard');
-const dashboardContent = document.querySelector('.dashboard-content');
 const departmentTabs = document.getElementById('department-tabs');
 const departmentPanel = document.getElementById('department-panel');
 const profileButton = document.getElementById('profile-button');
@@ -39,7 +38,6 @@ const avatarInput = document.getElementById('avatar-input');
 const avatarDropzone = document.getElementById('avatar-dropzone');
 const avatarSelectButton = document.getElementById('avatar-select-button');
 const godViewSwitch = document.getElementById('god-view-switch');
-const godPanelBackButton = document.getElementById('god-panel-back');
 const godDepartmentView = document.getElementById('god-department-view');
 const userManagementPanel = document.getElementById('user-management-panel');
 const userList = document.getElementById('user-list');
@@ -73,7 +71,6 @@ const AGENDA_STORAGE_KEY = 'fibaroAgenda';
 let activeUser = null;
 let activeGodView = 'agenda';
 let agendaDataCache = null;
-let isGodPanelVisible = false;
 
 const escapeHtml = (value) => {
     if (value === undefined || value === null) {
@@ -1105,56 +1102,6 @@ const setGodView = (viewKey) => {
     profilePanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
-const getActiveGodPanel = () => {
-    if (!godDashboard) {
-        return null;
-    }
-
-    const panel = godDashboard.querySelector('.god-panel:not([hidden])');
-    return panel instanceof HTMLElement ? panel : null;
-};
-
-const enterGodPanel = (viewKey) => {
-    setGodView(viewKey);
-
-    if (!godDashboard) {
-        return;
-    }
-
-    const wasVisible = isGodPanelVisible;
-
-    godDashboard.removeAttribute('hidden');
-    dashboardContent?.classList.add('god-panel-active');
-    roleDashboard?.classList.add('god-panel-view');
-    godPanelBackButton?.removeAttribute('hidden');
-    isGodPanelVisible = true;
-
-    if (!wasVisible) {
-        const activePanel = getActiveGodPanel();
-        if (activePanel) {
-            activePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        requestAnimationFrame(() => {
-            godPanelBackButton?.focus();
-        });
-    }
-};
-
-const exitGodPanel = () => {
-    if (!godDashboard) {
-        isGodPanelVisible = false;
-        return;
-    }
-
-    setProfileEditMode(false);
-    godDashboard.setAttribute('hidden', 'hidden');
-    dashboardContent?.classList.remove('god-panel-active');
-    roleDashboard?.classList.remove('god-panel-view');
-    godPanelBackButton?.setAttribute('hidden', 'hidden');
-    isGodPanelVisible = false;
-};
-
 const buildRoleOptions = (selectedRole) =>
     Object.entries(rolesContent)
         .map(([roleKey, info]) => {
@@ -1546,14 +1493,13 @@ const handleDepartmentClick = (event) => {
 const renderRoleDashboard = (roleKey) => {
     const roleInfo = rolesContent[roleKey];
 
-    exitGodPanel();
-
     if (!roleInfo) {
         return;
     }
 
     if (roleKey === 'dios') {
         standardDashboard?.setAttribute('hidden', 'hidden');
+        godDashboard?.removeAttribute('hidden');
         roleDashboard?.classList.add('god-active');
         godViewSwitch?.removeAttribute('hidden');
         buildDepartmentTabs();
@@ -1776,7 +1722,7 @@ const initializeDashboard = () => {
             }
 
             if (activeUser.role === 'dios') {
-                enterGodPanel('profile');
+                setGodView('profile');
                 return;
             }
 
@@ -1966,17 +1912,7 @@ const initializeDashboard = () => {
                 return;
             }
 
-            enterGodPanel(button.dataset.view);
-        });
-    }
-
-    if (godPanelBackButton) {
-        godPanelBackButton.addEventListener('click', () => {
-            exitGodPanel();
-            const activeButton = godViewSwitch?.querySelector('button[aria-selected="true"]');
-            if (activeButton instanceof HTMLButtonElement) {
-                activeButton.focus();
-            }
+            setGodView(button.dataset.view);
         });
     }
 
